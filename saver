@@ -1,0 +1,11 @@
+#!/bin/bash
+# Kill any existing instances
+pkill -f "python.*app.py" 2>/dev/null
+sleep 1
+
+# Start the battery optimizer
+cd /Users/home/Projects/system-tools/m3.macbook.air
+source venv/bin/activate
+python app.py &
+
+echo "Battery Optimizer started! Check your menu bar for the 🎯 icon."

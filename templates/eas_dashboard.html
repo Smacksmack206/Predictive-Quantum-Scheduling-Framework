@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EAS Performance Monitor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --surface: #ffffff;
+            --background: #f8fafc;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .eas-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface);
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .switch {
+            position: relative;
+            width: 60px;
+            height: 32px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 32px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(28px);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .metric-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .metric-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .metric-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .metric-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .metric-change {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .positive { color: var(--success); }
+        .negative { color: var(--error); }
+        .neutral { color: var(--text-secondary); }
+        
+        .chart-container {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .chart-legend {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+        
+        .core-visualization {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .core-cluster {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .cluster-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .cluster-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .cores-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .core {
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .core.active {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+        }
+        
+        .core-id {
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .core-usage {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .process-list {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .process-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .process-item:last-child {
+            border-bottom: none;
+        }
+        
+        .process-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .process-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: white;
+        }
+        
+        .process-name {
+            font-weight: 500;
+        }
+        
+        .process-type {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .process-assignment {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .assignment-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .p-core-badge {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .e-core-badge {
+            background: #d1fae5;
+            color: #065f46;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">
+                <span class="material-icons" style="font-size: 2rem;">memory</span>
+                Energy Aware Scheduling Monitor
+            </h1>
+            <div class="eas-toggle">
+                <span>EAS</span>
+                <label class="switch">
+                    <input type="checkbox" id="easToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: var(--success);">
+                        <span class="material-icons">battery_charging_full</span>
+                    </div>
+                    <div class="metric-title">Battery Efficiency</div>
+                </div>
+                <div class="metric-value" id="batteryEfficiency">+0%</div>
+                <div class="metric-change neutral" id="batteryChange">
+                    <span class="material-icons" style="font-size: 1rem;">trending_flat</span>
+                    No change from baseline
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: var(--primary);">
+                        <span class="material-icons">schedule</span>
+                    </div>
+                    <div class="metric-title">Time on Battery</div>
+                </div>
+                <div class="metric-value" id="timeOnBattery">0h</div>
+                <div class="metric-change neutral" id="timeChange">
+                    <span class="material-icons" style="font-size: 1rem;">access_time</span>
+                    Since last full charge
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: var(--warning);">
+                        <span class="material-icons">flash_on</span>
+                    </div>
+                    <div class="metric-title">Current Draw</div>
+                </div>
+                <div class="metric-value" id="currentDraw">0mA</div>
+                <div class="metric-change neutral" id="drawChange">
+                    <span class="material-icons" style="font-size: 1rem;">bolt</span>
+                    Power consumption
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: var(--error);">
+                        <span class="material-icons">device_thermostat</span>
+                    </div>
+                    <div class="metric-title">CPU Temperature</div>
+                </div>
+                <div class="metric-value" id="cpuTemperature">45°C</div>
+                <div class="metric-change neutral" id="thermalChange">
+                    <span class="material-icons" style="font-size: 1rem;">trending_flat</span>
+                    No thermal impact
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: var(--success);">
+                        <span class="material-icons">timer</span>
+                    </div>
+                    <div class="metric-title">Predicted Runtime</div>
+                </div>
+                <div class="metric-value" id="predictedRuntime">∞</div>
+                <div class="metric-change neutral" id="runtimeChange">
+                    <span class="material-icons" style="font-size: 1rem;">psychology</span>
+                    ML prediction
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: var(--primary);">
+                        <span class="material-icons">tune</span>
+                    </div>
+                    <div class="metric-title">Processes Optimized</div>
+                </div>
+                <div class="metric-value" id="processesOptimized">0</div>
+                <div class="metric-change neutral" id="processChange">
+                    <span class="material-icons" style="font-size: 1rem;">apps</span>
+                    EAS disabled
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Chart -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <div class="chart-title">Performance Comparison</div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--primary);"></div>
+                        <span>EAS Enabled</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--text-secondary);"></div>
+                        <span>EAS Disabled</span>
+                    </div>
+                </div>
+            </div>
+            <canvas id="performanceChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Core Visualization -->
+        <div class="core-visualization">
+            <div class="core-cluster">
+                <div class="cluster-header">
+                    <div class="metric-icon" style="background: var(--warning); width: 32px; height: 32px;">
+                        <span class="material-icons" style="font-size: 1.2rem;">flash_on</span>
+                    </div>
+                    <div class="cluster-title">Performance Cores</div>
+                </div>
+                <div class="cores-grid" id="pCoresGrid">
+                    <!-- P-cores will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="core-cluster">
+                <div class="cluster-header">
+                    <div class="metric-icon" style="background: var(--success); width: 32px; height: 32px;">
+                        <span class="material-icons" style="font-size: 1.2rem;">eco</span>
+                    </div>
+                    <div class="cluster-title">Efficiency Cores</div>
+                </div>
+                <div class="cores-grid" id="eCoresGrid">
+                    <!-- E-cores will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Process Assignments -->
+        <div class="process-list">
+            <div class="chart-header">
+                <div class="chart-title">Process Assignments</div>
+            </div>
+            <div id="processList">
+                <!-- Process list will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let easEnabled = false;
+        let performanceChart;
+        let baselineData = { battery: 0, performance: 100, thermal: 0 };
+        let currentData = { battery: 0, performance: 100, thermal: 0 };
+
+        // Initialize performance chart
+        function initChart() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'EAS Enabled',
+                        data: [],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'EAS Disabled',
+                        data: [],
+                        borderColor: '#64748b',
+                        backgroundColor: 'rgba(100, 116, 139, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 120,
+                            title: {
+                                display: true,
+                                text: 'Performance Score'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update core visualization
+        function updateCoreVisualization(coreData) {
+            const pCoresGrid = document.getElementById('pCoresGrid');
+            const eCoresGrid = document.getElementById('eCoresGrid');
+
+            // Update P-cores
+            pCoresGrid.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                const usage = coreData.p_cores ? coreData.p_cores[i] || 0 : 0;
+                const coreDiv = document.createElement('div');
+                coreDiv.className = `core ${usage > 20 ? 'active' : ''}`;
+                coreDiv.innerHTML = `
+                    <div class="core-id">P${i}</div>
+                    <div class="core-usage">${usage.toFixed(0)}%</div>
+                `;
+                pCoresGrid.appendChild(coreDiv);
+            }
+
+            // Update E-cores
+            eCoresGrid.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                const usage = coreData.e_cores ? coreData.e_cores[i] || 0 : 0;
+                const coreDiv = document.createElement('div');
+                coreDiv.className = `core ${usage > 20 ? 'active' : ''}`;
+                coreDiv.innerHTML = `
+                    <div class="core-id">E${i}</div>
+                    <div class="core-usage">${usage.toFixed(0)}%</div>
+                `;
+                eCoresGrid.appendChild(coreDiv);
+            }
+        }
+
+        // Update process list
+        function updateProcessList(processes) {
+            const processList = document.getElementById('processList');
+            processList.innerHTML = '';
+
+            processes.slice(0, 10).forEach(proc => {
+                const processDiv = document.createElement('div');
+                processDiv.className = 'process-item';
+                
+                const iconColor = proc.core_type === 'p_core' ? '#f59e0b' : '#10b981';
+                const badgeClass = proc.core_type === 'p_core' ? 'p-core-badge' : 'e-core-badge';
+                
+                processDiv.innerHTML = `
+                    <div class="process-info">
+                        <div class="process-icon" style="background: ${iconColor};">
+                            ${proc.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div class="process-name">${proc.name}</div>
+                            <div class="process-type">${proc.workload_type}</div>
+                        </div>
+                    </div>
+                    <div class="process-assignment">
+                        <span class="assignment-badge ${badgeClass}">
+                            ${proc.core_type === 'p_core' ? 'P-Core' : 'E-Core'}
+                        </span>
+                        <span>${proc.cpu_usage.toFixed(1)}%</span>
+                    </div>
+                `;
+                processList.appendChild(processDiv);
+            });
+        }
+
+        // Fetch EAS data
+        async function fetchEASData() {
+            try {
+                const response = await fetch('/api/eas-status');
+                const data = await response.json();
+                
+                // Update basic metrics
+                document.getElementById('batteryEfficiency').textContent = 
+                    data.battery_improvement > 0 ? `+${data.battery_improvement.toFixed(1)}%` : '0%';
+                document.getElementById('processesOptimized').textContent = 
+                    data.processes_optimized || 0;
+
+                // Update advanced battery metrics
+                const battery = data.advanced_battery || {};
+                
+                // Time on battery
+                const timeOnBattery = battery.time_on_battery_hours || 0;
+                document.getElementById('timeOnBattery').textContent = 
+                    timeOnBattery > 0 ? `${timeOnBattery.toFixed(1)}h` : '0h';
+                
+                // Current draw/charge
+                const currentDraw = document.getElementById('currentDraw');
+                const drawChange = document.getElementById('drawChange');
+                if (battery.plugged) {
+                    const chargeRate = battery.current_ma_charge || 0;
+                    currentDraw.textContent = chargeRate > 0 ? `+${chargeRate.toFixed(0)}mA` : '0mA';
+                    drawChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">power</span>Charging';
+                    drawChange.className = 'metric-change positive';
+                } else {
+                    const drainRate = battery.current_ma_drain || 0;
+                    currentDraw.textContent = drainRate > 0 ? `${drainRate.toFixed(0)}mA` : '0mA';
+                    drawChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">battery_alert</span>Discharging';
+                    drawChange.className = 'metric-change negative';
+                }
+                
+                // CPU Temperature
+                const temp = battery.temperature_celsius || 45;
+                document.getElementById('cpuTemperature').textContent = `${temp.toFixed(1)}°C`;
+                
+                // Thermal improvement
+                const thermalImprovement = data.thermal_improvement || 0;
+                updateChangeIndicator('thermalChange', -thermalImprovement, 'Temperature');
+                
+                // Predicted runtime
+                const predictedHours = battery.predicted_battery_hours || 0;
+                const runtimeElement = document.getElementById('predictedRuntime');
+                const runtimeChange = document.getElementById('runtimeChange');
+                
+                if (battery.plugged) {
+                    runtimeElement.textContent = '∞';
+                    runtimeChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">power</span>Plugged in';
+                    runtimeChange.className = 'metric-change positive';
+                } else if (predictedHours > 0) {
+                    if (predictedHours > 24) {
+                        runtimeElement.textContent = `${(predictedHours / 24).toFixed(1)}d`;
+                    } else {
+                        runtimeElement.textContent = `${predictedHours.toFixed(1)}h`;
+                    }
+                    runtimeChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">psychology</span>ML prediction';
+                    runtimeChange.className = 'metric-change neutral';
+                } else {
+                    runtimeElement.textContent = '?';
+                    runtimeChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">hourglass_empty</span>Calculating...';
+                    runtimeChange.className = 'metric-change neutral';
+                }
+
+                // Update change indicators
+                updateChangeIndicator('batteryChange', data.battery_improvement, 'Battery efficiency');
+                
+                // Show process count with context
+                const processElement = document.getElementById('processChange');
+                if (data.processes_optimized > 0) {
+                    processElement.className = 'metric-change positive';
+                    processElement.innerHTML = `<span class="material-icons" style="font-size: 1rem;">tune</span>${data.processes_optimized} processes optimized`;
+                } else {
+                    processElement.className = 'metric-change neutral';
+                    processElement.innerHTML = `<span class="material-icons" style="font-size: 1rem;">apps</span>EAS disabled`;
+                }
+
+                // Update visualizations
+                updateCoreVisualization(data.core_utilization || {});
+                updateProcessList(data.process_assignments || []);
+
+                // Update chart
+                updateChart(data.performance_score || 100);
+
+            } catch (error) {
+                console.error('Failed to fetch EAS data:', error);
+            }
+        }
+
+        function updateChangeIndicator(elementId, value, label) {
+            const element = document.getElementById(elementId);
+            const icon = element.querySelector('.material-icons');
+            
+            if (value > 0) {
+                element.className = 'metric-change positive';
+                icon.textContent = 'trending_up';
+                element.innerHTML = `${icon.outerHTML}+${value.toFixed(1)} improvement`;
+            } else if (value < 0) {
+                element.className = 'metric-change negative';
+                icon.textContent = 'trending_down';
+                element.innerHTML = `${icon.outerHTML}${value.toFixed(1)} decrease`;
+            } else {
+                element.className = 'metric-change neutral';
+                icon.textContent = 'trending_flat';
+                element.innerHTML = `${icon.outerHTML}No change`;
+            }
+        }
+
+        function updateChart(performanceScore) {
+            const now = new Date().toLocaleTimeString();
+            
+            if (performanceChart.data.labels.length > 20) {
+                performanceChart.data.labels.shift();
+                performanceChart.data.datasets[0].data.shift();
+                performanceChart.data.datasets[1].data.shift();
+            }
+            
+            performanceChart.data.labels.push(now);
+            performanceChart.data.datasets[0].data.push(easEnabled ? performanceScore : null);
+            performanceChart.data.datasets[1].data.push(!easEnabled ? performanceScore : null);
+            
+            performanceChart.update('none');
+        }
+
+        // EAS toggle
+        document.getElementById('easToggle').addEventListener('change', async (e) => {
+            easEnabled = e.target.checked;
+            
+            try {
+                await fetch('/api/eas-toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: easEnabled })
+                });
+                
+                fetchEASData();
+            } catch (error) {
+                console.error('Failed to toggle EAS:', error);
+            }
+        });
+
+        // Initialize
+        initChart();
+        fetchEASData();
+        setInterval(fetchEASData, 2000); // Update every 2 seconds
+    </script>
+</body>
+</html>

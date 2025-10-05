@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.user.batteryoptimizer</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <!-- Path to the python executable in the virtual environment -->
+        <string>/Users/home/Projects/system-tools/m3.macbook.air/venv/bin/python</string>
+        <!-- Path to the python application script -->
+        <string>/Users/home/Projects/system-tools/m3.macbook.air/enhanced_app.py</string>
+    </array>
+    
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <key>KeepAlive</key>
+    <true/>
+    
+    <key>LimitLoadToSessionType</key>
+    <string>Aqua</string>
+    
+    <key>StandardOutPath</key>
+    <string>/tmp/batteryoptimizer.out.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/tmp/batteryoptimizer.err.log</string>
+    
+    <key>WorkingDirectory</key>
+    <string>/Users/home/Projects/system-tools/m3.macbook.air</string>
+</dict>
+</plist>

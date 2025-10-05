@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery Optimizer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --md-sys-color-primary: #6750A4;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-surface: #FEF7FF;
+            --md-sys-color-on-surface: #1D1B20;
+            --md-sys-color-surface-variant: #E7E0EC;
+            --md-sys-color-outline: #79747E;
+            --md-sys-color-success: #4CAF50;
+            --md-sys-color-error: #F44336;
+            --md-sys-color-warning: #FF9800;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--md-sys-color-primary);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--md-sys-color-surface-variant);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--md-sys-color-surface-variant);
+        }
+        
+        .metric:last-child { border-bottom: none; }
+        
+        .metric-label {
+            font-weight: 500;
+            color: var(--md-sys-color-outline);
+        }
+        
+        .metric-value {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .badge-success { background: #E8F5E8; color: var(--md-sys-color-success); }
+        .badge-error { background: #FFEBEE; color: var(--md-sys-color-error); }
+        .badge-warning { background: #FFF3E0; color: var(--md-sys-color-warning); }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 32px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--md-sys-color-surface-variant);
+            transition: .4s;
+            border-radius: 32px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--md-sys-color-primary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+        
+        .btn {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            box-shadow: 0 2px 8px rgba(103, 80, 164, 0.3);
+        }
+        
+        .app-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .app-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: var(--md-sys-color-surface-variant);
+        }
+        
+        .material-icons {
+            margin-right: 12px;
+            color: var(--md-sys-color-outline);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--md-sys-color-outline);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--md-sys-color-surface-variant);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--md-sys-color-primary);
+        }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        
+        .battery-indicator {
+            width: 100px;
+            height: 20px;
+            border: 2px solid var(--md-sys-color-outline);
+            border-radius: 4px;
+            position: relative;
+            background: white;
+        }
+        
+        .battery-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s, background-color 0.3s;
+        }
+        
+        .battery-tip {
+            position: absolute;
+            right: -6px;
+            top: 25%;
+            width: 4px;
+            height: 50%;
+            background: var(--md-sys-color-outline);
+            border-radius: 0 2px 2px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Battery Optimizer</h1>
+            <label class="switch">
+                <input type="checkbox" id="serviceToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="status-grid">
+            <div class="card">
+                <div class="card-title">
+                    <span class="material-icons">battery_charging_full</span>
+                    System Status
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Service</span>
+                    <span class="metric-value">
+                        <span id="status-service" class="badge"></span>
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Power Source</span>
+                    <span class="metric-value" id="status-power"></span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Battery Level</span>
+                    <span class="metric-value">
+                        <div class="battery-indicator">
+                            <div class="battery-fill" id="battery-fill"></div>
+                            <div class="battery-tip"></div>
+                        </div>
+                        <span id="status-battery"></span>
+                    </span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Idle Time</span>
+                    <span class="metric-value" id="status-idle"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span class="material-icons">analytics</span>
+                    Battery Analytics
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Hours Saved</span>
+                    <span class="metric-value" id="hours-saved">Calculating...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Power Savings</span>
+                    <span class="metric-value" id="power-savings">Calculating...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Drain Rate (Optimized)</span>
+                    <span class="metric-value" id="drain-optimized">Calculating...</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Status</span>
+                    <span class="metric-value" id="analytics-status">Initializing...</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <span class="material-icons">pause_circle</span>
+                    Suspended Apps
+                </div>
+                <div class="app-list" id="suspended-apps-list">
+                    <div class="app-item">No suspended apps</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span class="material-icons">psychology</span>
+                ML Recommendations
+            </div>
+            <div class="metric">
+                <span class="metric-label">Confidence Level</span>
+                <span class="metric-value" id="ml-confidence">Learning...</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Suggested CPU Threshold</span>
+                <span class="metric-value" id="ml-cpu">Analyzing...</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Suggested RAM Threshold</span>
+                <span class="metric-value" id="ml-ram">Analyzing...</span>
+            </div>
+            <div class="metric">
+                <span class="metric-label">Data Points</span>
+                <span class="metric-value" id="ml-data-points">0</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span class="material-icons">settings</span>
+                Configuration
+            </div>
+            <div class="form-group">
+                <label class="form-label">Applications to Manage</label>
+                <textarea id="appsToManage" class="form-input" rows="6" placeholder="Enter app names, one per line..."></textarea>
+            </div>
+            <div class="grid-3">
+                <div class="form-group">
+                    <label class="form-label">CPU Threshold (%)</label>
+                    <input type="number" id="cpuThreshold" class="form-input" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">RAM Threshold (MB)</label>
+                    <input type="number" id="ramThreshold" class="form-input" min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Network Threshold (KB/s)</label>
+                    <input type="number" id="netThreshold" class="form-input" min="0">
+                </div>
+            </div>
+            <button id="saveConfig" class="btn">Save Configuration</button>
+            <button id="applyML" class="btn" style="margin-left: 12px; background: var(--md-sys-color-success);">Apply ML Recommendations</button>
+            <div id="saveStatus" style="margin-top: 12px; font-weight: 500;"></div>
+        </div>
+    </div>
+
+    <script>
+        const serviceToggle = document.getElementById('serviceToggle');
+        const saveButton = document.getElementById('saveConfig');
+        const applyMLButton = document.getElementById('applyML');
+        let currentMLRecommendations = null;
+
+        async function fetchStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+
+                serviceToggle.checked = data.enabled;
+
+                const statusService = document.getElementById('status-service');
+                statusService.textContent = data.enabled ? 'Running' : 'Disabled';
+                statusService.className = data.enabled ? 'badge badge-success' : 'badge badge-error';
+
+                document.getElementById('status-power').textContent = data.on_battery ? '🔋 Battery' : '🔌 AC Power';
+                document.getElementById('status-battery').textContent = `${data.battery_level}%`;
+                document.getElementById('status-idle').textContent = `${Math.round(data.idle_time)}s`;
+
+                // Update battery indicator
+                const batteryFill = document.getElementById('battery-fill');
+                const level = data.battery_level;
+                batteryFill.style.width = `${level}%`;
+                if (level > 50) batteryFill.style.backgroundColor = 'var(--md-sys-color-success)';
+                else if (level > 20) batteryFill.style.backgroundColor = 'var(--md-sys-color-warning)';
+                else batteryFill.style.backgroundColor = 'var(--md-sys-color-error)';
+
+                // Update analytics from status response
+                const analytics = data.analytics || {};
+                document.getElementById('hours-saved').textContent = 
+                    analytics.estimated_hours_saved ? `${analytics.estimated_hours_saved}h` : 'Calculating...';
+                document.getElementById('power-savings').textContent = 
+                    analytics.savings_percentage ? `${analytics.savings_percentage}%` : 'Calculating...';
+                document.getElementById('drain-optimized').textContent = 
+                    analytics.drain_rate_with_optimization ? `${analytics.drain_rate_with_optimization}%/h` : 'Calculating...';
+                document.getElementById('analytics-status').textContent = 
+                    analytics.status || 'Initializing...';
+
+                // Update suspended apps
+                const appList = document.getElementById('suspended-apps-list');
+                appList.innerHTML = '';
+                if (data.suspended_apps.length > 0) {
+                    data.suspended_apps.forEach(app => {
+                        const div = document.createElement('div');
+                        div.className = 'app-item';
+                        div.innerHTML = `<span class="material-icons">pause</span>${app}`;
+                        appList.appendChild(div);
+                    });
+                } else {
+                    const div = document.createElement('div');
+                    div.className = 'app-item';
+                    div.innerHTML = '<span class="material-icons">check_circle</span>No suspended apps';
+                    appList.appendChild(div);
+                }
+            } catch (error) {
+                console.error('Failed to fetch status:', error);
+            }
+        }
+
+        async function fetchAnalytics() {
+            try {
+                const response = await fetch('/api/analytics');
+                const data = await response.json();
+
+                const optimal = data.optimal_settings || {};
+                currentMLRecommendations = optimal;
+                
+                document.getElementById('ml-confidence').textContent = 
+                    optimal.confidence ? `${optimal.confidence}%` : 'Learning...';
+                document.getElementById('ml-cpu').textContent = 
+                    optimal.suggested_cpu_threshold ? `${optimal.suggested_cpu_threshold}%` : 'Analyzing...';
+                document.getElementById('ml-ram').textContent = 
+                    optimal.suggested_ram_threshold ? `${optimal.suggested_ram_threshold}MB` : 'Analyzing...';
+                document.getElementById('ml-data-points').textContent = 
+                    optimal.data_points || '0';
+
+                // Enable/disable ML apply button based on confidence
+                applyMLButton.disabled = !optimal.confidence || optimal.confidence < 50;
+
+            } catch (error) {
+                console.error('Failed to fetch analytics:', error);
+            }
+        }
+
+        async function fetchConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const data = await response.json();
+                document.getElementById('appsToManage').value = data.apps_to_manage.join('\n');
+                document.getElementById('cpuThreshold').value = data.cpu_threshold_percent;
+                document.getElementById('ramThreshold').value = data.ram_threshold_mb;
+                document.getElementById('netThreshold').value = data.network_threshold_kbps;
+            } catch (error) {
+                console.error('Failed to fetch config:', error);
+            }
+        }
+
+        serviceToggle.addEventListener('change', async () => {
+            try {
+                await fetch('/api/toggle', { method: 'POST' });
+                fetchStatus();
+            } catch (error) {
+                console.error('Failed to toggle service:', error);
+            }
+        });
+
+        saveButton.addEventListener('click', async () => {
+            try {
+                const config = {
+                    apps_to_manage: document.getElementById('appsToManage').value.split('\n').filter(Boolean),
+                    cpu_threshold_percent: parseInt(document.getElementById('cpuThreshold').value),
+                    ram_threshold_mb: parseInt(document.getElementById('ramThreshold').value),
+                    network_threshold_kbps: parseInt(document.getElementById('netThreshold').value)
+                };
+
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                const result = await response.json();
+                
+                const saveStatus = document.getElementById('saveStatus');
+                saveStatus.textContent = result.message;
+                saveStatus.style.color = result.success ? 'var(--md-sys-color-success)' : 'var(--md-sys-color-error)';
+                setTimeout(() => saveStatus.textContent = '', 3000);
+            } catch (error) {
+                console.error('Failed to save config:', error);
+            }
+        });
+
+        applyMLButton.addEventListener('click', async () => {
+            if (!currentMLRecommendations || currentMLRecommendations.confidence < 50) {
+                alert('ML recommendations not ready yet. Need more usage data.');
+                return;
+            }
+
+            try {
+                document.getElementById('cpuThreshold').value = currentMLRecommendations.suggested_cpu_threshold;
+                document.getElementById('ramThreshold').value = currentMLRecommendations.suggested_ram_threshold;
+                
+                const config = {
+                    apps_to_manage: document.getElementById('appsToManage').value.split('\n').filter(Boolean),
+                    cpu_threshold_percent: currentMLRecommendations.suggested_cpu_threshold,
+                    ram_threshold_mb: currentMLRecommendations.suggested_ram_threshold,
+                    network_threshold_kbps: parseInt(document.getElementById('netThreshold').value)
+                };
+
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                const result = await response.json();
+                
+                const saveStatus = document.getElementById('saveStatus');
+                saveStatus.textContent = 'ML recommendations applied successfully!';
+                saveStatus.style.color = 'var(--md-sys-color-success)';
+                setTimeout(() => saveStatus.textContent = '', 3000);
+            } catch (error) {
+                console.error('Failed to apply ML recommendations:', error);
+            }
+        });
+
+        // Initial load and periodic refresh
+        fetchStatus();
+        fetchConfig();
+        fetchAnalytics();
+        setInterval(fetchStatus, 3000);
+        setInterval(fetchAnalytics, 10000); // Update analytics every 10 seconds
+    </script>
+</body>
+</html>

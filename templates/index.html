@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery Optimizer Dashboard</title>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet"/>
+    <!-- MDB -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/7.3.2/mdb.min.css" rel="stylesheet"/>
+    <style>
+        body { background-color: #fbfbfb; }
+        .container { max-width: 900px; }
+        .card { margin-bottom: 1.5rem; }
+        .status-badge { font-size: 0.9rem; padding: 0.5em 0.8em; }
+        #appsToManage { height: 200px; }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Battery Optimizer</h1>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="serviceToggle" />
+                <label class="form-check-label" for="serviceToggle">Service Enabled</label>
+            </div>
+        </div>
+
+        <!-- Status Cards -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Live Status</h5>
+                        <p class="card-text">
+                            <strong>Service:</strong> <span id="status-service" class="badge rounded-pill"></span><br>
+                            <strong>Power Source:</strong> <span id="status-power"></span><br>
+                            <strong>Battery Level:</strong> <span id="status-battery"></span><br>
+                            <strong>System Idle Time:</strong> <span id="status-idle"></span>s
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Suspended Apps</h5>
+                        <ul id="suspended-apps-list" class="list-group list-group-light">
+                            <li class="list-group-item">(None)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Configuration</h5>
+                <div class="mb-3">
+                    <label for="appsToManage" class="form-label">Applications to Manage (one per line)</label>
+                    <textarea class="form-control" id="appsToManage" rows="4"></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="cpuThreshold" class="form-label">CPU Threshold (%)</label>
+                        <input type="number" id="cpuThreshold" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="ramThreshold" class="form-label">RAM Threshold (MB)</label>
+                        <input type="number" id="ramThreshold" class="form-control">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="netThreshold" class="form-label">Network Threshold (KB/s)</label>
+                        <input type="number" id="netThreshold" class="form-control">
+                    </div>
+                </div>
+                <button id="saveConfig" class="btn btn-primary mt-3">Save Configuration</button>
+                <div id="saveStatus" class="mt-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MDB -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/7.3.2/mdb.umd.min.js"></script>
+    <script>
+        const serviceToggle = document.getElementById('serviceToggle');
+        const saveButton = document.getElementById('saveConfig');
+
+        async function fetchStatus() {
+            const response = await fetch('/api/status');
+            const data = await response.json();
+
+            // Update toggle
+            serviceToggle.checked = data.enabled;
+
+            // Update status text
+            document.getElementById('status-service').textContent = data.enabled ? 'Running' : 'Disabled';
+            document.getElementById('status-service').className = data.enabled ? 'badge rounded-pill badge-success' : 'badge rounded-pill badge-danger';
+            document.getElementById('status-power').textContent = data.on_battery ? 'Battery' : 'AC Power';
+            document.getElementById('status-battery').textContent = `${data.battery_level}%`;
+            document.getElementById('status-idle').textContent = Math.round(data.idle_time);
+
+            // Update suspended apps
+            const appList = document.getElementById('suspended-apps-list');
+            appList.innerHTML = '';
+            if (data.suspended_apps.length > 0) {
+                data.suspended_apps.forEach(app => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = app;
+                    appList.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.textContent = '(None)';
+                appList.appendChild(li);
+            }
+        }
+
+        async function fetchConfig() {
+            const response = await fetch('/api/config');
+            const data = await response.json();
+            document.getElementById('appsToManage').value = data.apps_to_manage.join('\n');
+            document.getElementById('cpuThreshold').value = data.cpu_threshold_percent;
+            document.getElementById('ramThreshold').value = data.ram_threshold_mb;
+            document.getElementById('netThreshold').value = data.network_threshold_kbps;
+        }
+
+        serviceToggle.addEventListener('change', async () => {
+            await fetch('/api/toggle', { method: 'POST' });
+            fetchStatus();
+        });
+
+        saveButton.addEventListener('click', async () => {
+            const config = {
+                apps_to_manage: document.getElementById('appsToManage').value.split('\n').filter(Boolean),
+                cpu_threshold_percent: parseInt(document.getElementById('cpuThreshold').value),
+                ram_threshold_mb: parseInt(document.getElementById('ramThreshold').value),
+                network_threshold_kbps: parseInt(document.getElementById('netThreshold').value)
+            };
+
+            const response = await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+            const result = await response.json();
+            
+            const saveStatus = document.getElementById('saveStatus');
+            saveStatus.textContent = result.message;
+            saveStatus.className = result.success ? 'text-success' : 'text-danger';
+            setTimeout(() => saveStatus.textContent = '', 3000);
+        });
+
+        // Initial load
+        fetchStatus();
+        fetchConfig();
+        setInterval(fetchStatus, 5000); // Refresh status every 5 seconds
+    </script>
+</body>
+</html>
