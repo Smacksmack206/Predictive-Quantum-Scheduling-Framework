@@ -222,13 +222,15 @@ This project is licensed under the Elastic License 2.0 - see the [LICENSE.md](LI
 - **Apple Silicon Architecture**: Optimized for M1/M2/M3 chips
 - **macOS Integration**: Native menu bar and system integration
 - **Open Source Libraries**: Built on psutil, Flask, rumps, and Chart.js
+- **HM-Media Labs**: Innovative software solutions for modern computing
 
 ## 📞 Support
 
 - **Issues**: [GitHub Issues](https://github.com/Smacksmack206/Battery-Optimizer-Pro/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/Smacksmack206/Battery-Optimizer-Pro/discussions)
 - **Documentation**: [Technical Documentation](doc.md)
+- **Company**: [HM-Media Labs](https://hm-media-labs.com)
 
 ---
 
-**Made with ⚡ for M3 MacBook Air**
+**Made with ⚡ by HM-Media Labs for M3 MacBook Air**

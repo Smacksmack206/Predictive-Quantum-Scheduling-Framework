@@ -55,5 +55,5 @@ The **licensor** is the entity offering these terms, and the **software** is the
 ---
 
 **Battery Optimizer Pro**  
-Copyright © 2025 Battery Optimizer Pro Team  
+Copyright © 2025 HM-Media Labs  
 Licensed under the Elastic License 2.0

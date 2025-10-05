@@ -25,7 +25,7 @@ OPTIONS = {
         'CFBundleDocumentTypes': [],
         'NSRequiresAquaSystemAppearance': False,
         'LSApplicationCategoryType': 'public.app-category.utilities',
-        'NSHumanReadableCopyright': 'Copyright © 2025 Battery Optimizer Pro'
+        'NSHumanReadableCopyright': 'Copyright © 2025 HM-Media Labs'
     },
     'packages': ['rumps', 'psutil', 'flask', 'waitress'],
     'includes': ['sqlite3', 'json', 'threading', 'subprocess', 'time', 'os', 'signal'],
@@ -43,6 +43,6 @@ setup(
     name='Battery Optimizer Pro',
     version='1.0.0',
     description='Intelligent battery optimization for macOS',
-    author='Battery Optimizer Pro',
-    url='https://github.com/batteryoptimizer/pro'
+    author='HM-Media Labs',
+    url='https://github.com/Smacksmack206/Battery-Optimizer-Pro'
 )
