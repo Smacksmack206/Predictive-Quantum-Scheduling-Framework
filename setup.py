@@ -28,7 +28,7 @@ OPTIONS = {
         'NSHumanReadableCopyright': 'Copyright © 2025 HM-Media Labs'
     },
     'packages': ['rumps', 'psutil', 'flask', 'waitress'],
-    'includes': ['sqlite3', 'json', 'threading', 'subprocess', 'time', 'os', 'signal'],
+    'includes': ['sqlite3', 'json', 'threading', 'subprocess', 'time', 'os', 'signal', 'statistics', 'datetime'],
     'excludes': ['tkinter', 'matplotlib', 'numpy', 'scipy'],
     'optimize': 2,
     'compressed': True,

@@ -7,24 +7,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/themes.css">
     <style>
-        :root {
-            --primary: #6366f1;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --surface: #ffffff;
-            --background: #f8fafc;
-            --text: #1e293b;
-            --text-secondary: #64748b;
-        }
-        
+        /* EAS Dashboard-specific styles that work with theme system */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--background);
-            color: var(--text);
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
         }
         
@@ -39,12 +30,16 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 32px;
+            padding: 24px;
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-primary);
         }
         
         .title {
             font-size: 2rem;
             font-weight: 700;
-            color: var(--primary);
+            color: var(--accent-primary);
             display: flex;
             align-items: center;
             gap: 12px;
@@ -54,7 +49,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            background: var(--surface);
+            background: var(--bg-card);
             padding: 12px 20px;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -97,7 +92,7 @@
         }
         
         input:checked + .slider {
-            background-color: var(--primary);
+            background-color: var(--accent-primary);
         }
         
         input:checked + .slider:before {
@@ -112,9 +107,10 @@
         }
         
         .metric-card {
-            background: var(--surface);
+            background: var(--bg-card);
             border-radius: 16px;
             padding: 24px;
+            border: 1px solid var(--border-primary);
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             border: 1px solid #e2e8f0;
         }
@@ -154,14 +150,15 @@
             gap: 4px;
         }
         
-        .positive { color: var(--success); }
-        .negative { color: var(--error); }
+        .positive { color: var(--accent-success); }
+        .negative { color: var(--accent-error); }
         .neutral { color: var(--text-secondary); }
         
         .chart-container {
-            background: var(--surface);
+            background: var(--bg-card);
             border-radius: 16px;
             padding: 24px;
+            border: 1px solid var(--border-primary);
             margin-bottom: 24px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
@@ -204,9 +201,10 @@
         }
         
         .core-cluster {
-            background: var(--surface);
+            background: var(--bg-card);
             border-radius: 16px;
             padding: 24px;
+            border: 1px solid var(--border-primary);
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
@@ -237,8 +235,8 @@
         }
         
         .core.active {
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            color: white;
+            background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
+            color: var(--text-inverse);
         }
         
         .core-id {
@@ -253,9 +251,10 @@
         }
         
         .process-list {
-            background: var(--surface);
+            background: var(--bg-card);
             border-radius: 16px;
             padding: 24px;
+            border: 1px solid var(--border-primary);
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
@@ -323,7 +322,18 @@
         }
     </style>
 </head>
-<body>
+<body class="theme-dark">
+    <!-- Theme Selector -->
+    <div class="theme-selector">
+        <div class="theme-toggle">
+            <span class="material-icons">palette</span>
+            <select id="themeSelect">
+                <option value="light">Light</option>
+                <option value="dark" selected>Dark</option>
+                <option value="solarized">Solarized Dark</option>
+            </select>
+        </div>
+    </div>
     <div class="container">
         <div class="header">
             <h1 class="title">
@@ -343,7 +353,7 @@
         <div class="metrics-grid">
             <div class="metric-card">
                 <div class="metric-header">
-                    <div class="metric-icon" style="background: var(--success);">
+                    <div class="metric-icon" style="background: var(--accent-success);">
                         <span class="material-icons">battery_charging_full</span>
                     </div>
                     <div class="metric-title">Battery Efficiency</div>
@@ -357,7 +367,7 @@
 
             <div class="metric-card">
                 <div class="metric-header">
-                    <div class="metric-icon" style="background: var(--primary);">
+                    <div class="metric-icon" style="background: var(--accent-primary);">
                         <span class="material-icons">schedule</span>
                     </div>
                     <div class="metric-title">Time on Battery</div>
@@ -371,7 +381,7 @@
 
             <div class="metric-card">
                 <div class="metric-header">
-                    <div class="metric-icon" style="background: var(--warning);">
+                    <div class="metric-icon" style="background: var(--accent-warning);">
                         <span class="material-icons">flash_on</span>
                     </div>
                     <div class="metric-title">Current Draw</div>
@@ -385,7 +395,7 @@
 
             <div class="metric-card">
                 <div class="metric-header">
-                    <div class="metric-icon" style="background: var(--error);">
+                    <div class="metric-icon" style="background: var(--accent-error);">
                         <span class="material-icons">device_thermostat</span>
                     </div>
                     <div class="metric-title">CPU Temperature</div>
@@ -399,7 +409,7 @@
 
             <div class="metric-card">
                 <div class="metric-header">
-                    <div class="metric-icon" style="background: var(--success);">
+                    <div class="metric-icon" style="background: var(--accent-success);">
                         <span class="material-icons">timer</span>
                     </div>
                     <div class="metric-title">Predicted Runtime</div>
@@ -413,7 +423,7 @@
 
             <div class="metric-card">
                 <div class="metric-header">
-                    <div class="metric-icon" style="background: var(--primary);">
+                    <div class="metric-icon" style="background: var(--accent-primary);">
                         <span class="material-icons">tune</span>
                     </div>
                     <div class="metric-title">Processes Optimized</div>
@@ -432,7 +442,7 @@
                 <div class="chart-title">Performance Comparison</div>
                 <div class="chart-legend">
                     <div class="legend-item">
-                        <div class="legend-color" style="background: var(--primary);"></div>
+                        <div class="legend-color" style="background: var(--accent-primary);"></div>
                         <span>EAS Enabled</span>
                     </div>
                     <div class="legend-item">
@@ -448,7 +458,7 @@
         <div class="core-visualization">
             <div class="core-cluster">
                 <div class="cluster-header">
-                    <div class="metric-icon" style="background: var(--warning); width: 32px; height: 32px;">
+                    <div class="metric-icon" style="background: var(--accent-warning); width: 32px; height: 32px;">
                         <span class="material-icons" style="font-size: 1.2rem;">flash_on</span>
                     </div>
                     <div class="cluster-title">Performance Cores</div>
@@ -460,7 +470,7 @@
 
             <div class="core-cluster">
                 <div class="cluster-header">
-                    <div class="metric-icon" style="background: var(--success); width: 32px; height: 32px;">
+                    <div class="metric-icon" style="background: var(--accent-success); width: 32px; height: 32px;">
                         <span class="material-icons" style="font-size: 1.2rem;">eco</span>
                     </div>
                     <div class="cluster-title">Efficiency Cores</div>
@@ -615,14 +625,26 @@
                 const drawChange = document.getElementById('drawChange');
                 if (battery.plugged) {
                     const chargeRate = battery.current_ma_charge || 0;
-                    currentDraw.textContent = chargeRate > 0 ? `+${chargeRate.toFixed(0)}mA` : '0mA';
-                    drawChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">power</span>Charging';
-                    drawChange.className = 'metric-change positive';
+                    if (chargeRate > 0) {
+                        currentDraw.textContent = `+${chargeRate.toFixed(0)}mA`;
+                        drawChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">power</span>Charging';
+                        drawChange.className = 'metric-change positive';
+                    } else {
+                        currentDraw.textContent = 'AC Power';
+                        drawChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">power</span>Plugged in';
+                        drawChange.className = 'metric-change positive';
+                    }
                 } else {
                     const drainRate = battery.current_ma_drain || 0;
-                    currentDraw.textContent = drainRate > 0 ? `${drainRate.toFixed(0)}mA` : '0mA';
-                    drawChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">battery_alert</span>Discharging';
-                    drawChange.className = 'metric-change negative';
+                    if (drainRate > 0) {
+                        currentDraw.textContent = `${drainRate.toFixed(0)}mA`;
+                        drawChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">battery_alert</span>Discharging';
+                        drawChange.className = 'metric-change negative';
+                    } else {
+                        currentDraw.textContent = 'Calculating...';
+                        drawChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">hourglass_empty</span>Measuring drain';
+                        drawChange.className = 'metric-change neutral';
+                    }
                 }
                 
                 // CPU Temperature
@@ -645,14 +667,26 @@
                 } else if (predictedHours > 0) {
                     if (predictedHours > 24) {
                         runtimeElement.textContent = `${(predictedHours / 24).toFixed(1)}d`;
+                    } else if (predictedHours < 1) {
+                        runtimeElement.textContent = `${(predictedHours * 60).toFixed(0)}m`;
                     } else {
                         runtimeElement.textContent = `${predictedHours.toFixed(1)}h`;
                     }
-                    runtimeChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">psychology</span>ML prediction';
-                    runtimeChange.className = 'metric-change neutral';
+                    
+                    // Show different icons based on remaining time
+                    if (predictedHours < 2) {
+                        runtimeChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">battery_alert</span>Low battery';
+                        runtimeChange.className = 'metric-change negative';
+                    } else if (predictedHours < 4) {
+                        runtimeChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">battery_3_bar</span>Moderate usage';
+                        runtimeChange.className = 'metric-change neutral';
+                    } else {
+                        runtimeChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">battery_full</span>Good runtime';
+                        runtimeChange.className = 'metric-change positive';
+                    }
                 } else {
-                    runtimeElement.textContent = '?';
-                    runtimeChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">hourglass_empty</span>Calculating...';
+                    runtimeElement.textContent = 'Calculating...';
+                    runtimeChange.innerHTML = '<span class="material-icons" style="font-size: 1rem;">hourglass_empty</span>Measuring usage';
                     runtimeChange.className = 'metric-change neutral';
                 }
 
@@ -733,10 +767,21 @@
             }
         });
 
+        // Theme switching
+        document.getElementById('themeSelect').addEventListener('change', (e) => {
+            document.body.className = `theme-${e.target.value}`;
+            localStorage.setItem('battery-optimizer-theme', e.target.value);
+        });
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('battery-optimizer-theme') || 'dark';
+        document.body.className = `theme-${savedTheme}`;
+        document.getElementById('themeSelect').value = savedTheme;
+
         // Initialize
         initChart();
         fetchEASData();
-        setInterval(fetchEASData, 2000); // Update every 2 seconds
+        setInterval(fetchEASData, 1500); // Update every 1.5 seconds for very responsive updates
     </script>
 </body>
 </html>

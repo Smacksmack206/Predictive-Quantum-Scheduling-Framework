@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery History - Battery Optimizer Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link rel="stylesheet" href="/static/themes.css">
+
+    <style>
+        .theme-selector {
+            position: fixed !important;
+            top: 20px !important;
+            right: 20px !important;
+            z-index: 9999 !important;
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-primary) !important;
+            border-radius: var(--border-radius) !important;
+            padding: 8px !important;
+            box-shadow: var(--shadow) !important;
+        }
+        
+        .theme-toggle select {
+            background: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-primary) !important;
+            border-radius: 4px !important;
+            padding: 4px 8px !important;
+            font-size: 12px !important;
+        }
+    </style>
+
+    <style>
+        /* Force theme variables to load immediately */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-primary: #e2e8f0;
+            --border-radius: 12px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .theme-dark {
+            --bg-primary: #0f172a !important;
+            --bg-secondary: #1e293b !important;
+            --bg-card: #1e293b !important;
+            --text-primary: #f8fafc !important;
+            --text-secondary: #cbd5e1 !important;
+            --border-primary: #334155 !important;
+        }
+        
+        .theme-solarized {
+            --bg-primary: #002b36 !important;
+            --bg-secondary: #073642 !important;
+            --bg-card: #073642 !important;
+            --text-primary: #839496 !important;
+            --text-secondary: #93a1a1 !important;
+            --border-primary: #586e75 !important;
+        }
+        
+        /* Apply theme variables immediately */
+        body {
+            background: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .container {
+            background: var(--bg-primary) !important;
+        }
+        
+        .header {
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-primary) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .chart-container {
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-primary) !important;
+        }
+        
+        .stat-card {
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-primary) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .theme-selector {
+            position: fixed !important;
+            top: 20px !important;
+            right: 20px !important;
+            z-index: 9999 !important;
+            background: var(--bg-card) !important;
+            border: 1px solid var(--border-primary) !important;
+            border-radius: 8px !important;
+            padding: 8px !important;
+            box-shadow: var(--shadow) !important;
+        }
+        
+        .theme-toggle select {
+            background: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border-primary) !important;
+            border-radius: 4px !important;
+            padding: 4px 8px !important;
+        }
+    </style>
+
+    <style>
+        .chart-wrapper {
+            position: relative;
+            height: 400px !important;
+            width: 100% !important;
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            border: 1px solid var(--border-primary);
+            margin: 20px 0;
+        }
+        
+        #batteryChart {
+            width: 100% !important;
+            height: 100% !important;
+            display: block !important;
+        }
+        
+        .chart-container {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid var(--border-primary);
+        }
+        
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="theme-dark">
+    <!-- Theme Selector -->
+    <div class="theme-selector">
+        <div class="theme-toggle">
+            <span class="material-icons">palette</span>
+            <select id="themeSelect">
+                <option value="light">Light</option>
+                <option value="dark" selected>Dark</option>
+                <option value="solarized">Solarized Dark</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <h1 class="title">
+                    <span class="material-icons">history</span>
+                    Battery History
+                </h1>
+                <div class="subtitle">Track your battery usage patterns over time</div>
+            </div>
+            <div class="header-right">
+                <div class="update-status" id="updateStatus">
+                    <span class="material-icons">system_update</span>
+                    <span id="updateText">Checking for updates...</span>
+                </div>
+                <div class="live-indicator">
+                    <div class="pulse"></div>
+                    <span>Live</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time Range Selector -->
+        <div class="controls-panel">
+            <div class="time-range-selector">
+                <button class="range-btn active" data-range="today">Today</button>
+                <button class="range-btn" data-range="week">7 Days</button>
+                <button class="range-btn" data-range="month">30 Days</button>
+                <button class="range-btn" data-range="all">All Time</button>
+            </div>
+            <div class="view-options">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="showEAS" checked>
+                    <span class="slider"></span>
+                    <span class="label">Show EAS Status</span>
+                </label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="showApps" checked>
+                    <span class="slider"></span>
+                    <span class="label">Show App Changes</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Main Chart -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <h2>Battery Drain Over Time</h2>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-color battery-line"></div>
+                        <span>Battery Level</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color drain-rate"></div>
+                        <span>Drain Rate (mA)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color eas-active"></div>
+                        <span>EAS Active</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color eas-inactive"></div>
+                        <span>EAS Inactive</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="batteryChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Battery Cycles -->
+        <div class="cycles-container">
+            <h2>Battery Cycles</h2>
+            <div class="cycles-grid" id="cyclesGrid">
+                <!-- Battery cycles will be populated here -->
+            </div>
+        </div>
+
+        <!-- App Configuration Changes -->
+        <div class="app-changes-container">
+            <h2>App Configuration Changes</h2>
+            <div class="app-changes-timeline" id="appChangesTimeline">
+                <!-- App changes will be populated here -->
+            </div>
+        </div>
+
+        <!-- Statistics Panel -->
+        <div class="stats-panel">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <span class="material-icons">battery_charging_full</span>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="avgBatteryLife">0h</div>
+                    <div class="stat-label">Average Battery Life</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <span class="material-icons">trending_down</span>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="avgDrainRate">0mA</div>
+                    <div class="stat-label">Average Drain Rate</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <span class="material-icons">schedule</span>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="easUptime">0%</div>
+                    <div class="stat-label">EAS Uptime</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <span class="material-icons">savings</span>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" id="totalSavings">0h</div>
+                    <div class="stat-label">Total Time Saved</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Modal -->
+    <div class="modal" id="updateModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Update Available</h3>
+                <button class="modal-close" id="closeUpdateModal">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="update-info" id="updateInfo">
+                    <!-- Update information will be populated here -->
+                </div>
+                <div class="update-actions">
+                    <button class="btn btn-secondary" id="skipUpdate">Skip This Version</button>
+                    <button class="btn btn-primary" id="installUpdate">
+                        <span class="material-icons">download</span>
+                        Install Update
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/battery-history-simple.js"></script>
+</body>
+</html>
