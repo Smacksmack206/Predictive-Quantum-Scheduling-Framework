@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time EAS Monitor - Battery Optimizer Pro</title>
+    
+    <!-- Material Design Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
+    <!-- Theme System -->
+    <link href="/static/themes.css" rel="stylesheet">
+    
+    <style>
+        .activity-feed {
+            height: 400px;
+            overflow-y: auto;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--bg-tertiary);
+            animation: slideIn 0.3s ease-in-out;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            min-width: 60px;
+        }
+        
+        .activity-icon {
+            margin: 0 10px;
+            font-size: 1.2rem;
+        }
+        
+        .activity-text {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .metric-card {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .process-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .process-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .core-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .p-core-badge {
+            background: rgba(255, 99, 132, 0.2);
+            color: rgba(255, 99, 132, 1);
+        }
+        
+        .e-core-badge {
+            background: rgba(75, 192, 192, 0.2);
+            color: rgba(75, 192, 192, 1);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-active { background: var(--accent-success); }
+        .status-inactive { background: var(--accent-error); }
+        .status-learning { background: var(--accent-warning); animation: pulse 2s infinite; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 250px;
+            margin: 15px 0;
+        }
+        
+        .real-time-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--accent-success);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="mb-1">
+                            <i class="fas fa-chart-line text-primary me-2"></i>
+                            Real-Time EAS Monitor
+                        </h1>
+                        <p class="text-muted mb-0">
+                            <span class="status-indicator status-learning"></span>
+                            Live Enhanced EAS Activity Monitoring
+                        </p>
+                    </div>
+                    
+                    <!-- Controls -->
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-success btn-sm" onclick="toggleMonitoring()">
+                            <i class="fas fa-play" id="monitorIcon"></i>
+                            <span id="monitorText">Start</span>
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="forceRefresh()">
+                            <i class="fas fa-sync"></i>
+                            Refresh
+                        </button>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-mdb-toggle="dropdown">
+                                <i class="fas fa-palette"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="changeTheme('light')">Light</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeTheme('dark')">Dark</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeTheme('solarized')">Solarized</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Real-time Metrics -->
+        <div class="row mb-4">
+            <div class="col-md-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalClassifications">0</div>
+                    <div class="metric-label">Total Classifications</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="processesOptimized">0</div>
+                    <div class="metric-label">Processes Optimized</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="avgConfidence">0%</div>
+                    <div class="metric-label">Avg Confidence</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="learningRate">0</div>
+                    <div class="metric-label">Learning Rate/min</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="pCoreUsage">0%</div>
+                    <div class="metric-label">P-Core Usage</div>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="metric-card">
+                    <div class="metric-value" id="eCoreUsage">0%</div>
+                    <div class="metric-label">E-Core Usage</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Classification Activity
+                        </h5>
+                        <div class="real-time-badge">LIVE</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="classificationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-microchip me-2"></i>
+                            Core Utilization
+                        </h5>
+                        <div class="real-time-badge">LIVE</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="coreUtilizationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Activity and Process Details -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-stream me-2"></i>
+                            Live Activity Feed
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="activity-feed" id="activityFeed">
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                                <p>Waiting for activity data...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-cogs me-2"></i>
+                            Active Process Assignments
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="process-list" id="processList">
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                                <p>Loading process data...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Classification Breakdown -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-pie me-2"></i>
+                            Classification Type Breakdown
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="classificationBreakdownChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.js"></script>
+    
+    <script>
+        class RealTimeEASMonitor {
+            constructor() {
+                this.isMonitoring = false;
+                this.updateInterval = null;
+                this.charts = {};
+                this.activityHistory = [];
+                this.previousData = {};
+                
+                this.init();
+            }
+            
+            init() {
+                this.initCharts();
+                this.loadTheme();
+                this.startMonitoring();
+            }
+            
+            initCharts() {
+                // Classification Activity Chart
+                const classCtx = document.getElementById('classificationChart').getContext('2d');
+                this.charts.classification = new Chart(classCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Classifications/min',
+                            data: [],
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+                
+                // Core Utilization Chart
+                const coreCtx = document.getElementById('coreUtilizationChart').getContext('2d');
+                this.charts.coreUtilization = new Chart(coreCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [
+                            {
+                                label: 'P-Cores',
+                                data: [],
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                                tension: 0.4
+                            },
+                            {
+                                label: 'E-Cores',
+                                data: [],
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, max: 100 }
+                        }
+                    }
+                });
+                
+                // Classification Breakdown Chart
+                const breakdownCtx = document.getElementById('classificationBreakdownChart').getContext('2d');
+                this.charts.breakdown = new Chart(breakdownCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            data: [],
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 205, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(153, 102, 255, 0.8)',
+                                'rgba(255, 159, 64, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+            
+            async updateData() {
+                try {
+                    // Fetch all data
+                    const [learningResponse, easResponse, insightsResponse] = await Promise.all([
+                        fetch('/api/eas-learning-stats'),
+                        fetch('/api/eas-status'),
+                        fetch('/api/eas-insights')
+                    ]);
+                    
+                    const learningData = await learningResponse.json();
+                    const easData = await easResponse.json();
+                    const insightsData = await insightsResponse.json();
+                    
+                    // Update metrics
+                    this.updateMetrics(learningData, easData, insightsData);
+                    
+                    // Update charts
+                    this.updateCharts(learningData, easData);
+                    
+                    // Update activity feed
+                    this.updateActivityFeed(learningData, easData);
+                    
+                    // Update process list
+                    this.updateProcessList(easData);
+                    
+                    // Update classification breakdown
+                    this.updateClassificationBreakdown(learningData);
+                    
+                    this.previousData = { learning: learningData, eas: easData, insights: insightsData };
+                    
+                } catch (error) {
+                    console.error('Error updating data:', error);
+                    this.showError('Failed to fetch real-time data');
+                }
+            }
+            
+            updateMetrics(learningData, easData, insightsData) {
+                // Update metric cards
+                document.getElementById('totalClassifications').textContent = 
+                    (learningData.total_classifications || 0).toLocaleString();
+                
+                document.getElementById('processesOptimized').textContent = 
+                    easData.processes_optimized || 0;
+                
+                document.getElementById('avgConfidence').textContent = 
+                    ((learningData.average_confidence || 0) * 100).toFixed(1) + '%';
+                
+                // Calculate learning rate
+                const currentClassifications = learningData.total_classifications || 0;
+                const previousClassifications = this.previousData.learning?.total_classifications || 0;
+                const learningRate = Math.max(0, (currentClassifications - previousClassifications) * 20); // Per minute estimate
+                document.getElementById('learningRate').textContent = learningRate;
+                
+                // Core usage
+                const coreUtil = easData.core_utilization || {};
+                document.getElementById('pCoreUsage').textContent = (coreUtil.p_avg || 0).toFixed(1) + '%';
+                document.getElementById('eCoreUsage').textContent = (coreUtil.e_avg || 0).toFixed(1) + '%';
+            }
+            
+            updateCharts(learningData, easData) {
+                const now = new Date().toLocaleTimeString();
+                
+                // Classification chart
+                const classChart = this.charts.classification;
+                const currentClassifications = learningData.total_classifications || 0;
+                const previousClassifications = this.previousData.learning?.total_classifications || 0;
+                const newClassifications = Math.max(0, currentClassifications - previousClassifications);
+                
+                classChart.data.labels.push(now);
+                classChart.data.datasets[0].data.push(newClassifications * 20); // Estimate per minute
+                
+                // Keep only last 20 points
+                if (classChart.data.labels.length > 20) {
+                    classChart.data.labels.shift();
+                    classChart.data.datasets[0].data.shift();
+                }
+                classChart.update('none');
+                
+                // Core utilization chart
+                const coreChart = this.charts.coreUtilization;
+                const coreUtil = easData.core_utilization || {};
+                
+                coreChart.data.labels.push(now);
+                coreChart.data.datasets[0].data.push(coreUtil.p_avg || 0);
+                coreChart.data.datasets[1].data.push(coreUtil.e_avg || 0);
+                
+                if (coreChart.data.labels.length > 20) {
+                    coreChart.data.labels.shift();
+                    coreChart.data.datasets[0].data.shift();
+                    coreChart.data.datasets[1].data.shift();
+                }
+                coreChart.update('none');
+            }
+            
+            updateActivityFeed(learningData, easData) {
+                const feed = document.getElementById('activityFeed');
+                const currentTime = new Date().toLocaleTimeString();
+                
+                // Check for new classifications
+                const currentClassifications = learningData.total_classifications || 0;
+                const previousClassifications = this.previousData.learning?.total_classifications || 0;
+                
+                if (currentClassifications > previousClassifications) {
+                    const newClassifications = currentClassifications - previousClassifications;
+                    this.addActivityItem(feed, currentTime, 'fas fa-brain', 
+                        `+${newClassifications.toLocaleString()} new classifications learned`);
+                }
+                
+                // Check for process optimization changes
+                const currentOptimized = easData.processes_optimized || 0;
+                const previousOptimized = this.previousData.eas?.processes_optimized || 0;
+                
+                if (currentOptimized !== previousOptimized) {
+                    const diff = currentOptimized - previousOptimized;
+                    const icon = diff > 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down';
+                    const text = diff > 0 ? 
+                        `+${diff} processes added to optimization` : 
+                        `${Math.abs(diff)} processes removed from optimization`;
+                    this.addActivityItem(feed, currentTime, icon, text);
+                }
+                
+                // Keep only last 50 items
+                while (feed.children.length > 50) {
+                    feed.removeChild(feed.firstChild);
+                }
+                
+                // Auto-scroll to bottom
+                feed.scrollTop = feed.scrollHeight;
+            }
+            
+            addActivityItem(feed, time, iconClass, text) {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                item.innerHTML = `
+                    <div class="activity-time">${time}</div>
+                    <div class="activity-icon"><i class="${iconClass}"></i></div>
+                    <div class="activity-text">${text}</div>
+                `;
+                feed.appendChild(item);
+            }
+            
+            updateProcessList(easData) {
+                const processList = document.getElementById('processList');
+                const assignments = easData.process_assignments || [];
+                
+                processList.innerHTML = '';
+                
+                assignments.slice(0, 15).forEach(assignment => {
+                    const item = document.createElement('div');
+                    item.className = 'process-item';
+                    
+                    const coreClass = assignment.core_type === 'p_core' ? 'p-core-badge' : 'e-core-badge';
+                    const coreIcon = assignment.core_type === 'p_core' ? '🔥' : '💚';
+                    
+                    item.innerHTML = `
+                        <div>
+                            <strong>${assignment.name || 'Unknown'}</strong>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary);">
+                                ${assignment.workload_type || 'unknown'}
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="core-badge ${coreClass}">
+                                ${coreIcon} ${assignment.core_type || 'unknown'}
+                            </span>
+                            <span style="font-size: 0.8rem;">
+                                ${(assignment.cpu_usage || 0).toFixed(1)}%
+                            </span>
+                        </div>
+                    `;
+                    
+                    processList.appendChild(item);
+                });
+                
+                if (assignments.length === 0) {
+                    processList.innerHTML = '<div class="text-center text-muted py-4">No active process assignments</div>';
+                }
+            }
+            
+            updateClassificationBreakdown(learningData) {
+                const chart = this.charts.breakdown;
+                const classifications = learningData.recent_classifications || [];
+                
+                const labels = classifications.slice(0, 6).map(c => c[0]);
+                const data = classifications.slice(0, 6).map(c => c[1]);
+                
+                chart.data.labels = labels;
+                chart.data.datasets[0].data = data;
+                chart.update('none');
+            }
+            
+            startMonitoring() {
+                if (this.isMonitoring) return;
+                
+                this.isMonitoring = true;
+                document.getElementById('monitorIcon').className = 'fas fa-pause';
+                document.getElementById('monitorText').textContent = 'Pause';
+                
+                // Initial update
+                this.updateData();
+                
+                // Set interval for updates
+                this.updateInterval = setInterval(() => {
+                    this.updateData();
+                }, 3000); // Update every 3 seconds
+            }
+            
+            stopMonitoring() {
+                if (!this.isMonitoring) return;
+                
+                this.isMonitoring = false;
+                document.getElementById('monitorIcon').className = 'fas fa-play';
+                document.getElementById('monitorText').textContent = 'Start';
+                
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                    this.updateInterval = null;
+                }
+            }
+            
+            loadTheme() {
+                const savedTheme = localStorage.getItem('batteryOptimizerTheme') || 'dark';
+                changeTheme(savedTheme);
+            }
+            
+            showError(message) {
+                console.error(message);
+                // Could add toast notification here
+            }
+        }
+        
+        // Global functions
+        function toggleMonitoring() {
+            if (monitor.isMonitoring) {
+                monitor.stopMonitoring();
+            } else {
+                monitor.startMonitoring();
+            }
+        }
+        
+        function forceRefresh() {
+            if (monitor.isMonitoring) {
+                monitor.updateData();
+            }
+        }
+        
+        function changeTheme(theme) {
+            document.documentElement.className = `theme-${theme}`;
+            localStorage.setItem('batteryOptimizerTheme', theme);
+        }
+        
+        // Initialize monitor
+        let monitor;
+        document.addEventListener('DOMContentLoaded', function() {
+            monitor = new RealTimeEASMonitor();
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (monitor) {
+                monitor.stopMonitoring();
+            }
+        });
+    </script>
+</body>
+</html>

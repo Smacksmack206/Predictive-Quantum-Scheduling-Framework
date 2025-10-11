@@ -25,10 +25,11 @@ class M3ThermalManager:
     def get_cpu_temperature(self):
         """Get CPU temperature using powermetrics or estimation"""
         try:
-            # Try powermetrics (requires sudo, so fallback to estimation)
-            result = subprocess.run([
-                "sudo", "powermetrics", "-n", "1", "-s", "cpu_power"
-            ], capture_output=True, text=True, timeout=5)
+            # Try powermetrics with permission manager
+            from permission_manager import permission_manager
+            result = permission_manager.execute_with_sudo([
+                "powermetrics", "-n", "1", "-s", "cpu_power"
+            ], timeout=5)
             
             if result.returncode == 0:
                 # Parse temperature from powermetrics output

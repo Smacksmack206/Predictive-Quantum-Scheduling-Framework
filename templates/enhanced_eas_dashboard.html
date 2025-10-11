@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced EAS Dashboard - Battery Optimizer Pro</title>
+    
+    <!-- Material Design Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
+    <!-- Theme System -->
+    <link href="/static/themes.css" rel="stylesheet">
+    
+    <style>
+        .dashboard-card {
+            transition: transform 0.2s ease-in-out;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--accent-primary), var(--accent-success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .confidence-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, 
+                var(--accent-error) 0%, 
+                var(--accent-warning) 50%, 
+                var(--accent-success) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .confidence-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .process-card {
+            border-left: 4px solid var(--accent-primary);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+        }
+        
+        .classification-badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        .strategy-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+        
+        .core-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .p-core { background: var(--accent-primary); }
+        .e-core { background: var(--accent-success); }
+        
+        .learning-progress {
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-success));
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .learning-fill {
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
+        .real-time-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="mb-1">
+                            <i class="fas fa-brain text-primary me-2"></i>
+                            Enhanced EAS Dashboard
+                        </h1>
+                        <p class="text-muted mb-0">
+                            <span class="real-time-indicator"></span>
+                            Intelligent Machine Learning Process Classification
+                        </p>
+                    </div>
+                    
+                    <!-- Theme Selector -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary dropdown-toggle" type="button" id="themeDropdown" data-mdb-toggle="dropdown">
+                            <i class="fas fa-palette me-1"></i> Theme
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="changeTheme('light')">
+                                <i class="fas fa-sun me-2"></i>Light
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="changeTheme('dark')">
+                                <i class="fas fa-moon me-2"></i>Dark
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="changeTheme('solarized')">
+                                <i class="fas fa-adjust me-2"></i>Solarized
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-cogs fa-2x text-primary mb-3"></i>
+                        <h5>Enhanced EAS</h5>
+                        <div class="metric-value" id="easStatus">Loading...</div>
+                        <small class="text-muted">System Status</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-microchip fa-2x text-success mb-3"></i>
+                        <h5>Processes Optimized</h5>
+                        <div class="metric-value" id="processesOptimized">0</div>
+                        <small class="text-muted">Active Classifications</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-graduation-cap fa-2x text-warning mb-3"></i>
+                        <h5>Learning Confidence</h5>
+                        <div class="metric-value" id="learningConfidence">0%</div>
+                        <div class="confidence-bar mt-2">
+                            <div class="confidence-indicator" id="confidenceIndicator" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-database fa-2x text-info mb-3"></i>
+                        <h5>Classifications Stored</h5>
+                        <div class="metric-value" id="classificationsStored">0</div>
+                        <small class="text-muted">Learning Database</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Core Utilization and Classification Charts -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-pie me-2"></i>
+                            Core Assignment Distribution
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="coreDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Classification Confidence Over Time
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="confidenceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Learning Statistics -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-brain me-2"></i>
+                            Machine Learning Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-grid" id="learningStats">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h6>Learning Progress</h6>
+                            <div class="learning-progress">
+                                <div class="learning-fill" id="learningProgress" style="width: 0%"></div>
+                            </div>
+                            <small class="text-muted mt-1 d-block">System learning effectiveness based on data volume and accuracy</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Current Process Classifications -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card dashboard-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Current Process Classifications
+                        </h5>
+                        <button class="btn btn-sm btn-outline-primary" onclick="reclassifyAll()">
+                            <i class="fas fa-sync me-1"></i>
+                            Reclassify All
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="processClassifications">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Controls -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card dashboard-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-sliders-h me-2"></i>
+                            Enhanced EAS Controls
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <button class="btn btn-success w-100 mb-2" onclick="enableEnhancedEAS()">
+                                    <i class="fas fa-power-off me-1"></i>
+                                    Enable Enhanced EAS
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-warning w-100 mb-2" onclick="reclassifyAll()">
+                                    <i class="fas fa-sync me-1"></i>
+                                    Force Reclassification
+                                </button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-info w-100 mb-2" onclick="exportLearningData()">
+                                    <i class="fas fa-download me-1"></i>
+                                    Export Learning Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.js"></script>
+    
+    <script>
+        class EnhancedEASDashboard {
+            constructor() {
+                this.charts = {};
+                this.updateInterval = null;
+                this.confidenceHistory = [];
+                this.init();
+            }
+            
+            init() {
+                this.initCharts();
+                this.loadTheme();
+                this.startRealTimeUpdates();
+                this.loadInitialData();
+            }
+            
+            initCharts() {
+                // Core Distribution Chart
+                const coreCtx = document.getElementById('coreDistributionChart').getContext('2d');
+                this.charts.coreDistribution = new Chart(coreCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['P-Cores', 'E-Cores'],
+                        datasets: [{
+                            data: [0, 0],
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(75, 192, 192, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(75, 192, 192, 1)'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                
+                // Confidence Chart
+                const confidenceCtx = document.getElementById('confidenceChart').getContext('2d');
+                this.charts.confidence = new Chart(confidenceCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Average Confidence',
+                            data: [],
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 1,
+                                ticks: {
+                                    callback: function(value) {
+                                        return (value * 100).toFixed(0) + '%';
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+            
+            async loadInitialData() {
+                try {
+                    await this.updateInsights();
+                    await this.updateLearningStats();
+                } catch (error) {
+                    console.error('Error loading initial data:', error);
+                    this.showError('Failed to load initial data. Enhanced EAS may not be enabled.');
+                }
+            }
+            
+            async updateInsights() {
+                try {
+                    const response = await fetch('/api/eas-insights');
+                    if (!response.ok) throw new Error('EAS insights not available');
+                    
+                    const data = await response.json();
+                    
+                    // Update status cards
+                    document.getElementById('easStatus').textContent = 'Active';
+                    document.getElementById('processesOptimized').textContent = data.total_processes_classified || 0;
+                    
+                    const confidence = data.confidence_distribution?.average_confidence || 0;
+                    document.getElementById('learningConfidence').textContent = (confidence * 100).toFixed(1) + '%';
+                    document.getElementById('confidenceIndicator').style.width = (confidence * 100) + '%';
+                    
+                    // Update core distribution chart
+                    if (data.classification_breakdown) {
+                        const pCoreCount = Object.values(data.classification_breakdown).reduce((sum, count) => {
+                            // Assume interactive and compute go to P-cores
+                            return sum + (count || 0);
+                        }, 0) / 2; // Rough estimate
+                        
+                        const eCoreCount = data.total_processes_classified - pCoreCount;
+                        
+                        this.charts.coreDistribution.data.datasets[0].data = [pCoreCount, eCoreCount];
+                        this.charts.coreDistribution.update();
+                    }
+                    
+                    // Update confidence history
+                    const now = new Date();
+                    this.confidenceHistory.push({
+                        time: now.toLocaleTimeString(),
+                        confidence: confidence
+                    });
+                    
+                    // Keep only last 20 points
+                    if (this.confidenceHistory.length > 20) {
+                        this.confidenceHistory.shift();
+                    }
+                    
+                    // Update confidence chart
+                    this.charts.confidence.data.labels = this.confidenceHistory.map(h => h.time);
+                    this.charts.confidence.data.datasets[0].data = this.confidenceHistory.map(h => h.confidence);
+                    this.charts.confidence.update();
+                    
+                } catch (error) {
+                    console.error('Error updating insights:', error);
+                }
+            }
+            
+            async updateLearningStats() {
+                try {
+                    const response = await fetch('/api/eas-learning-stats');
+                    if (!response.ok) throw new Error('Learning stats not available');
+                    
+                    const data = await response.json();
+                    
+                    document.getElementById('classificationsStored').textContent = data.total_classifications || 0;
+                    
+                    // Update learning statistics grid
+                    const statsGrid = document.getElementById('learningStats');
+                    statsGrid.innerHTML = '';
+                    
+                    const stats = [
+                        { label: 'Total Classifications', value: data.total_classifications || 0 },
+                        { label: 'Average Confidence', value: ((data.average_confidence || 0) * 100).toFixed(1) + '%' },
+                        { label: 'Recent Classifications', value: data.recent_classifications?.length || 0 },
+                        { label: 'Classification Types', value: Object.keys(data.current_thresholds || {}).length }
+                    ];
+                    
+                    stats.forEach(stat => {
+                        const statItem = document.createElement('div');
+                        statItem.className = 'stat-item';
+                        statItem.innerHTML = `
+                            <div class="stat-value">${stat.value}</div>
+                            <div class="stat-label">${stat.label}</div>
+                        `;
+                        statsGrid.appendChild(statItem);
+                    });
+                    
+                    // Update learning progress
+                    const totalClassifications = data.total_classifications || 0;
+                    const learningProgress = Math.min(totalClassifications / 1000, 1) * 100; // Progress to 1000 classifications
+                    document.getElementById('learningProgress').style.width = learningProgress + '%';
+                    
+                } catch (error) {
+                    console.error('Error updating learning stats:', error);
+                }
+            }
+            
+            async updateProcessClassifications() {
+                // This would require a new API endpoint to get current process classifications
+                // For now, show a placeholder
+                const container = document.getElementById('processClassifications');
+                container.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <p>Process classifications will be displayed here when available.</p>
+                        <p><small>This requires integration with the main EAS system.</small></p>
+                    </div>
+                `;
+            }
+            
+            startRealTimeUpdates() {
+                this.updateInterval = setInterval(() => {
+                    this.updateInsights();
+                    this.updateLearningStats();
+                    this.updateProcessClassifications();
+                }, 5000); // Update every 5 seconds
+            }
+            
+            stopRealTimeUpdates() {
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                    this.updateInterval = null;
+                }
+            }
+            
+            loadTheme() {
+                const savedTheme = localStorage.getItem('batteryOptimizerTheme') || 'dark';
+                changeTheme(savedTheme);
+            }
+            
+            showError(message) {
+                // Show error notification
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-warning alert-dismissible fade show';
+                errorDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-mdb-dismiss="alert"></button>
+                `;
+                
+                document.querySelector('.container-fluid').insertBefore(errorDiv, document.querySelector('.row'));
+                
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    if (errorDiv.parentNode) {
+                        errorDiv.remove();
+                    }
+                }, 5000);
+            }
+        }
+        
+        // Global functions
+        async function enableEnhancedEAS() {
+            try {
+                const response = await fetch('/api/eas-enable-enhanced', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    dashboard.showError('Enhanced EAS enabled successfully!');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    dashboard.showError('Failed to enable Enhanced EAS: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                dashboard.showError('Error enabling Enhanced EAS: ' + error.message);
+            }
+        }
+        
+        async function reclassifyAll() {
+            try {
+                const response = await fetch('/api/eas-reclassify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    dashboard.showError(`Reclassified ${data.reclassified_processes} processes successfully!`);
+                } else {
+                    dashboard.showError('Failed to reclassify processes: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                dashboard.showError('Error reclassifying processes: ' + error.message);
+            }
+        }
+        
+        async function exportLearningData() {
+            try {
+                const response = await fetch('/api/eas-learning-stats');
+                const data = await response.json();
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `eas_learning_data_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                dashboard.showError('Learning data exported successfully!');
+            } catch (error) {
+                dashboard.showError('Error exporting learning data: ' + error.message);
+            }
+        }
+        
+        function changeTheme(theme) {
+            document.documentElement.className = `theme-${theme}`;
+            localStorage.setItem('batteryOptimizerTheme', theme);
+            
+            // Update chart colors based on theme
+            if (window.dashboard && dashboard.charts) {
+                const isDark = theme === 'dark' || theme === 'solarized';
+                const textColor = isDark ? '#ffffff' : '#000000';
+                
+                Object.values(dashboard.charts).forEach(chart => {
+                    if (chart.options.scales) {
+                        if (chart.options.scales.x) chart.options.scales.x.ticks.color = textColor;
+                        if (chart.options.scales.y) chart.options.scales.y.ticks.color = textColor;
+                    }
+                    if (chart.options.plugins && chart.options.plugins.legend) {
+                        chart.options.plugins.legend.labels.color = textColor;
+                    }
+                    chart.update();
+                });
+            }
+        }
+        
+        // Initialize dashboard when page loads
+        let dashboard;
+        document.addEventListener('DOMContentLoaded', function() {
+            dashboard = new EnhancedEASDashboard();
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (dashboard) {
+                dashboard.stopRealTimeUpdates();
+            }
+        });
+    </script>
+</body>
+</html>
