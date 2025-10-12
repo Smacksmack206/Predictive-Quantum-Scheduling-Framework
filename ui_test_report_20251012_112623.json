@@ -1,0 +1,185 @@
+{
+  "summary": {
+    "total_tests": 25,
+    "passed": 18,
+    "failed": 7,
+    "success_rate": 72.0
+  },
+  "results": [
+    {
+      "test": "Server Connectivity",
+      "status": "PASS",
+      "details": "Server responding on http://localhost:9010",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:20.882434"
+    },
+    {
+      "test": "Main Dashboard",
+      "status": "FAIL",
+      "details": "Dashboard missing title",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:20.884658"
+    },
+    {
+      "test": "Battery History Page",
+      "status": "FAIL",
+      "details": "HTTP 500",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:20.886700"
+    },
+    {
+      "test": "Quantum Dashboard",
+      "status": "PASS",
+      "details": "Dashboard loads correctly",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:20.894112"
+    },
+    {
+      "test": "EAS Dashboard",
+      "status": "PASS",
+      "details": "EAS dashboard loads",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:20.904514"
+    },
+    {
+      "test": "Battery History API",
+      "status": "PASS",
+      "details": "All required data fields present",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:20.967619"
+    },
+    {
+      "test": "Ultimate EAS Status",
+      "status": "PASS",
+      "details": "Ultimate EAS is enabled by default \u2728",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:20.970257"
+    },
+    {
+      "test": "Quantum Metrics API",
+      "status": "FAIL",
+      "details": "No quantum metrics in response",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:20.970272"
+    },
+    {
+      "test": "System Status API",
+      "status": "PASS",
+      "details": "Returns valid JSON data",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:22.118263"
+    },
+    {
+      "test": "Battery Status API",
+      "status": "FAIL",
+      "details": "HTTP 404",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:22.121417"
+    },
+    {
+      "test": "EAS Status API",
+      "status": "PASS",
+      "details": "Returns valid JSON data",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.126511"
+    },
+    {
+      "test": "Suspended Apps API",
+      "status": "FAIL",
+      "details": "HTTP 404",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.131680"
+    },
+    {
+      "test": "Analytics API",
+      "status": "PASS",
+      "details": "Returns valid JSON data",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.241806"
+    },
+    {
+      "test": "Static Resource: CSS Themes",
+      "status": "PASS",
+      "details": "Resource loads correctly",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.245906"
+    },
+    {
+      "test": "Static Resource: Battery History JS",
+      "status": "PASS",
+      "details": "Resource loads correctly",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.249222"
+    },
+    {
+      "test": "Static Resource: Battery History Simple JS",
+      "status": "PASS",
+      "details": "Resource loads correctly",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.252142"
+    },
+    {
+      "test": "Static Resource: Battery History New JS",
+      "status": "PASS",
+      "details": "Resource loads correctly",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.254085"
+    },
+    {
+      "test": "Menu: Open Dashboard",
+      "status": "PASS",
+      "details": "Main dashboard should be accessible",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.256275"
+    },
+    {
+      "test": "Menu: Open Battery History",
+      "status": "FAIL",
+      "details": "Endpoint returns 500",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.258468"
+    },
+    {
+      "test": "Menu: Open Quantum Dashboard",
+      "status": "PASS",
+      "details": "Quantum dashboard should be accessible",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.260448"
+    },
+    {
+      "test": "Menu: View EAS Status",
+      "status": "PASS",
+      "details": "EAS dashboard should be accessible",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.261975"
+    },
+    {
+      "test": "Ultimate EAS Core",
+      "status": "PASS",
+      "details": "Ultimate EAS is active and enabled",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.263484"
+    },
+    {
+      "test": "Quantum Operations",
+      "status": "WARN",
+      "details": "No quantum operations yet (may be normal for new install)",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.263494"
+    },
+    {
+      "test": "Neural Classifications",
+      "status": "PASS",
+      "details": "0 neural classifications",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.263500"
+    },
+    {
+      "test": "System Performance",
+      "status": "PASS",
+      "details": "Performance level: 6%",
+      "error": null,
+      "timestamp": "2025-10-12T11:26:23.263505"
+    }
+  ]
+}

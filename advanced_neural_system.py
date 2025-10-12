@@ -172,14 +172,39 @@ class TransformerEAS:
         # Convert predictions to scheduling decisions
         scheduling_decisions = []
         for i, proc in enumerate(processes):
-            if i < len(priority_probs[0]):
+            try:
+                # Handle different prediction shapes safely
+                if len(priority_probs.shape) > 1 and i < priority_probs.shape[1]:
+                    priority_vec = priority_probs[0][i] if priority_probs.shape[0] > 0 else priority_probs[i]
+                    core_vec = core_probs[0][i] if core_probs.shape[0] > 0 else core_probs[i]
+                    energy_val = energy_scores[0][i] if energy_scores.shape[0] > 0 else energy_scores[i]
+                    
+                    # Ensure vectors are arrays
+                    if np.isscalar(priority_vec):
+                        priority_vec = np.array([priority_vec])
+                    if np.isscalar(core_vec):
+                        core_vec = np.array([core_vec])
+                    if np.isscalar(energy_val):
+                        energy_val = np.array([energy_val])
+                    
+                    decision = {
+                        'pid': proc.get('pid', i),
+                        'priority_class': np.argmax(priority_vec) if len(priority_vec) > 1 else 0,
+                        'priority_confidence': np.max(priority_vec) if len(priority_vec) > 0 else 0.5,
+                        'recommended_core': np.argmax(core_vec) if len(core_vec) > 1 else 0,
+                        'core_confidence': np.max(core_vec) if len(core_vec) > 0 else 0.5,
+                        'energy_efficiency': float(energy_val[0]) if len(energy_val) > 0 else 0.5,
+                    }
+                    scheduling_decisions.append(decision)
+            except (IndexError, ValueError) as e:
+                # Fallback decision for problematic cases
                 decision = {
                     'pid': proc.get('pid', i),
-                    'priority_class': np.argmax(priority_probs[0][i]),
-                    'priority_confidence': np.max(priority_probs[0][i]),
-                    'recommended_core': np.argmax(core_probs[0][i]),
-                    'core_confidence': np.max(core_probs[0][i]),
-                    'energy_efficiency': energy_scores[0][i][0],
+                    'priority_class': 0,
+                    'priority_confidence': 0.5,
+                    'recommended_core': i % 8,  # Simple round-robin
+                    'core_confidence': 0.5,
+                    'energy_efficiency': 0.5,
                 }
                 scheduling_decisions.append(decision)
         

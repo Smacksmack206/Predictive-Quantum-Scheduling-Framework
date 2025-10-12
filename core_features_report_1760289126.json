@@ -1,0 +1,54 @@
+{
+  "timestamp": 1760289126.6684859,
+  "status": "EXCELLENT",
+  "summary": {
+    "total_tests": 31,
+    "passed": 30,
+    "warnings": 1,
+    "failed": 0,
+    "success_rate": 96.7741935483871
+  },
+  "results": {
+    "endpoints": {
+      "/": "PASS",
+      "/api/status": "PASS",
+      "/api/quantum-status": "PASS",
+      "/quantum": "PASS",
+      "/static/themes.css": "PASS"
+    },
+    "quantum_data": {
+      "field_available": "PASS",
+      "field_system_uptime": "PASS",
+      "field_quantum_operations": "PASS",
+      "field_optimized_processes": "PASS",
+      "field_gpu_name": "PASS",
+      "field_average_speedup": "PASS",
+      "uptime_formatted": "PASS",
+      "status_optimization_cycles": "PASS",
+      "status_quantum_operations": "PASS",
+      "status_system_id": "PASS"
+    },
+    "data_progression": {
+      "uptime_progression": "PASS",
+      "quantum_ops_progression": "PASS",
+      "optimized_processes": "PASS"
+    },
+    "dashboard_content": {
+      "main_title": "PASS",
+      "main_css": "PASS",
+      "quantum_title": "PASS",
+      "element_system-uptime": "PASS",
+      "element_quantum-operations": "PASS",
+      "element_optimization-cycles": "PASS",
+      "api_calls": "PASS"
+    },
+    "eas_availability": {
+      "eas_quantum_operations": "PASS",
+      "eas_gpu_name": "PASS",
+      "eas_average_speedup": "PASS",
+      "eas_quantum_volume": "PASS",
+      "eas_enabled_flag": "WARN - Using fallback",
+      "quantum_active": "PASS"
+    }
+  }
+}

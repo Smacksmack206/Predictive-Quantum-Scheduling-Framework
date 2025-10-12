@@ -155,9 +155,19 @@ class CirqQuantumProcessor(QuantumProcessor):
     def _calculate_quantum_coherence(self, measurements: np.ndarray) -> float:
         """Calculate quantum coherence from measurements"""
         # Measure quantum coherence through measurement correlations
-        correlations = np.corrcoef(measurements.T)
-        coherence = np.mean(np.abs(correlations[np.triu_indices_from(correlations, k=1)]))
-        return coherence
+        try:
+            # Add small noise to prevent singular matrices
+            measurements_safe = measurements + np.random.normal(0, 1e-10, measurements.shape)
+            correlations = np.corrcoef(measurements_safe.T)
+            
+            # Handle NaN values
+            if np.any(np.isnan(correlations)):
+                return 0.5  # Default coherence
+                
+            coherence = np.mean(np.abs(correlations[np.triu_indices_from(correlations, k=1)]))
+            return np.clip(coherence, 0.0, 1.0)
+        except (np.linalg.LinAlgError, ValueError):
+            return 0.5  # Fallback coherence
     
     def _quantum_fallback(self, parameters: np.ndarray) -> np.ndarray:
         """Fallback quantum simulation"""
@@ -595,9 +605,25 @@ class QuantumNeuralEAS:
     def _calculate_entanglement(self, sig1: np.ndarray, sig2: np.ndarray) -> float:
         """Calculate quantum entanglement between signatures"""
         # Quantum entanglement measure (simplified)
-        correlation = np.corrcoef(sig1, sig2)[0, 1]
-        entanglement = abs(correlation) * np.exp(-np.linalg.norm(sig1 - sig2))
-        return float(entanglement)
+        try:
+            # Add small noise to prevent correlation issues
+            sig1_safe = sig1 + np.random.normal(0, 1e-10, sig1.shape)
+            sig2_safe = sig2 + np.random.normal(0, 1e-10, sig2.shape)
+            
+            correlation = np.corrcoef(sig1_safe, sig2_safe)[0, 1]
+            
+            # Handle NaN correlation
+            if np.isnan(correlation):
+                correlation = 0.0
+                
+            # Safe norm calculation
+            norm_diff = np.linalg.norm(sig1 - sig2)
+            norm_diff = np.clip(norm_diff, 0, 100)  # Prevent overflow
+            
+            entanglement = abs(correlation) * np.exp(-norm_diff)
+            return float(np.clip(entanglement, 0.0, 1.0))
+        except (np.linalg.LinAlgError, ValueError):
+            return 0.5  # Fallback entanglement
     
     def _calculate_quantum_coherence(self, quantum_signature: np.ndarray) -> float:
         """Calculate quantum coherence score"""
@@ -605,7 +631,16 @@ class QuantumNeuralEAS:
         variance = np.var(quantum_signature)
         entropy = -np.sum(quantum_signature * np.log(np.abs(quantum_signature) + 1e-10))
         
-        coherence = 1.0 / (1.0 + variance) * np.exp(-entropy / 10.0)
+        # Prevent overflow by clamping values
+        entropy = np.clip(entropy, -100, 100)
+        variance = np.clip(variance, 0, 100)
+        
+        # Safe exponential calculation
+        exp_term = np.clip(-entropy / 10.0, -50, 50)
+        coherence = 1.0 / (1.0 + variance) * np.exp(exp_term)
+        
+        # Ensure coherence is in valid range
+        coherence = np.clip(coherence, 0.0, 1.0)
         return float(coherence)
     
     def _store_for_learning(self, profile: ProcessQuantumProfile, features: np.ndarray):

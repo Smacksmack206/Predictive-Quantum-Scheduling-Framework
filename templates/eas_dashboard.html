@@ -340,12 +340,21 @@
                 <span class="material-icons" style="font-size: 2rem;">memory</span>
                 Energy Aware Scheduling Monitor
             </h1>
-            <div class="eas-toggle">
-                <span>EAS</span>
-                <label class="switch">
-                    <input type="checkbox" id="easToggle">
-                    <span class="slider"></span>
-                </label>
+            <div style="display: flex; gap: 24px;">
+                <div class="eas-toggle">
+                    <span>EAS</span>
+                    <label class="switch">
+                        <input type="checkbox" id="easToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="eas-toggle">
+                    <span>PQS</span>
+                    <label class="switch">
+                        <input type="checkbox" id="pqsToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
             </div>
         </div>
 
@@ -432,6 +441,20 @@
                 <div class="metric-change neutral" id="processChange">
                     <span class="material-icons" style="font-size: 1rem;">apps</span>
                     EAS disabled
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-header">
+                    <div class="metric-icon" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4);">
+                        <span class="material-icons">psychology</span>
+                    </div>
+                    <div class="metric-title">PQS Status</div>
+                </div>
+                <div class="metric-value" id="pqsStatus">Disabled</div>
+                <div class="metric-change neutral" id="pqsChange">
+                    <span class="material-icons" style="font-size: 1rem;">memory</span>
+                    Predictive-Quantum Scheduling
                 </div>
             </div>
         </div>
@@ -606,6 +629,10 @@
                 const response = await fetch('/api/eas-status');
                 const data = await response.json();
                 
+                // Update toggle states
+                document.getElementById('easToggle').checked = data.enabled;
+                document.getElementById('pqsToggle').checked = data.pqs_enabled || false;
+                
                 // Update basic metrics
                 document.getElementById('batteryEfficiency').textContent = 
                     data.battery_improvement > 0 ? `+${data.battery_improvement.toFixed(1)}%` : '0%';
@@ -703,6 +730,24 @@
                     processElement.innerHTML = `<span class="material-icons" style="font-size: 1rem;">apps</span>EAS disabled`;
                 }
 
+                // Update PQS status
+                const pqsStatusElement = document.getElementById('pqsStatus');
+                const pqsChangeElement = document.getElementById('pqsChange');
+                
+                if (data.pqs_enabled && data.pqs_active) {
+                    pqsStatusElement.textContent = 'Active';
+                    pqsChangeElement.className = 'metric-change positive';
+                    pqsChangeElement.innerHTML = '<span class="material-icons" style="font-size: 1rem;">psychology</span>Quantum optimization active';
+                } else if (data.pqs_enabled) {
+                    pqsStatusElement.textContent = 'Enabled';
+                    pqsChangeElement.className = 'metric-change neutral';
+                    pqsChangeElement.innerHTML = '<span class="material-icons" style="font-size: 1rem;">memory</span>PQS enabled, initializing...';
+                } else {
+                    pqsStatusElement.textContent = 'Disabled';
+                    pqsChangeElement.className = 'metric-change neutral';
+                    pqsChangeElement.innerHTML = '<span class="material-icons" style="font-size: 1rem;">memory</span>Predictive-Quantum Scheduling';
+                }
+
                 // Update visualizations
                 updateCoreVisualization(data.core_utilization || {});
                 updateProcessList(data.process_assignments || []);
@@ -764,6 +809,23 @@
                 fetchEASData();
             } catch (error) {
                 console.error('Failed to toggle EAS:', error);
+            }
+        });
+
+        // PQS toggle
+        document.getElementById('pqsToggle').addEventListener('change', async (e) => {
+            const pqsEnabled = e.target.checked;
+            
+            try {
+                await fetch('/api/pqs-toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: pqsEnabled })
+                });
+                
+                fetchEASData();
+            } catch (error) {
+                console.error('Failed to toggle PQS:', error);
             }
         });
 
