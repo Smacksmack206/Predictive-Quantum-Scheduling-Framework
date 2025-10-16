@@ -27,33 +27,71 @@ class RealTimeEASMonitor:
         """Clear terminal screen"""
         os.system('clear' if os.name == 'posix' else 'cls')
     
-    def get_current_activity(self):
-        """Get current EAS activity"""
+    def get_current_activity(self, port=5002):
+        """Get current EAS activity with improved error handling"""
         try:
+            # Try to detect server port dynamically
+            ports_to_try = [9010, 5002, 8080]
+
+            base_url = None
+            for port in ports_to_try:
+                try:
+                    # Quick connectivity test
+                    requests.head(f'http://localhost:{port}', timeout=1)
+                    base_url = f'http://localhost:{port}'
+                    break
+                except:
+                    continue
+
+            if not base_url:
+                # Fallback - assume the working app is running
+                base_url = 'http://localhost:9010'
+
             # Get learning stats
-            response = requests.get('http://localhost:9010/api/eas-learning-stats', timeout=5)
-            learning_data = response.json() if response.status_code == 200 else {}
-            
+            try:
+                response = requests.get(f'{base_url}/api/eas-learning-stats', timeout=5)
+                learning_data = response.json() if response.status_code == 200 else {}
+            except:
+                learning_data = {}
+
             # Get EAS status
-            response = requests.get('http://localhost:9010/api/eas-status', timeout=5)
-            eas_data = response.json() if response.status_code == 200 else {}
-            
+            try:
+                response = requests.get(f'{base_url}/api/eas-status', timeout=5)
+                eas_data = response.json() if response.status_code == 200 else {}
+            except:
+                eas_data = {}
+
             # Get insights
-            response = requests.get('http://localhost:9010/api/eas-insights', timeout=5)
-            insights_data = response.json() if response.status_code == 200 else {}
-            
+            try:
+                response = requests.get(f'{base_url}/api/eas-insights', timeout=5)
+                insights_data = response.json() if response.status_code == 200 else {}
+            except:
+                insights_data = {}
+
             # Get basic status
-            response = requests.get('http://localhost:9010/api/status', timeout=5)
-            status_data = response.json() if response.status_code == 200 else {}
-            
+            try:
+                response = requests.get(f'{base_url}/api/status', timeout=5)
+                status_data = response.json() if response.status_code == 200 else {}
+            except:
+                status_data = {}
+
+            # Get system stats as primary data source
+            try:
+                response = requests.get(f'{base_url}/api/system-stats', timeout=5)
+                system_data = response.json() if response.status_code == 200 else {}
+            except:
+                system_data = {}
+
             return {
                 'learning': learning_data,
                 'eas': eas_data,
                 'insights': insights_data,
                 'status': status_data,
-                'timestamp': datetime.now()
+                'system': system_data,
+                'timestamp': datetime.now(),
+                'server_url': base_url
             }
-            
+
         except Exception as e:
             return {'error': str(e), 'timestamp': datetime.now()}
     
