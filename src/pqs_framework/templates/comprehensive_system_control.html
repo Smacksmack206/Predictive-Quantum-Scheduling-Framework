@@ -437,6 +437,23 @@
                 </div>
             </div>
         </div>
+        
+        <!-- System Tunables Section -->
+        <div class="control-grid">
+            <div class="controller-card" style="grid-column: 1 / -1;">
+                <div class="controller-title">
+                    ⚙️ System Tunables (sysctl)
+                </div>
+                <p style="margin-bottom: 15px; opacity: 0.8; font-size: 0.9rem;">
+                    View and edit macOS system parameters. Editable tunables can be modified directly from the UI.
+                </p>
+                <div id="tunables-list" style="max-height: 600px; overflow-y: auto;">
+                    <div class="control-item">
+                        <span>Loading tunables...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -658,6 +675,115 @@
             alert('📊 System control report exported successfully!');
         }
         
+        // Fetch and display system tunables
+        async function fetchTunables() {
+            try {
+                const response = await fetch('/api/system/tunables');
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('Tunables error:', data.error);
+                    return;
+                }
+                
+                const tunablesContainer = document.getElementById('tunables-list');
+                if (!tunablesContainer) return;
+                
+                tunablesContainer.innerHTML = '';
+                
+                const tunables = data.tunables || {};
+                Object.keys(tunables).sort().forEach(name => {
+                    const tunable = tunables[name];
+                    const div = document.createElement('div');
+                    div.className = 'control-item';
+                    div.style.flexDirection = 'column';
+                    div.style.alignItems = 'flex-start';
+                    
+                    const header = document.createElement('div');
+                    header.style.display = 'flex';
+                    header.style.justifyContent = 'space-between';
+                    header.style.width = '100%';
+                    header.style.marginBottom = '5px';
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = name;
+                    nameSpan.style.fontWeight = '600';
+                    nameSpan.style.fontSize = '0.9rem';
+                    
+                    const valueSpan = document.createElement('span');
+                    valueSpan.className = 'control-value';
+                    valueSpan.textContent = tunable.value;
+                    valueSpan.style.fontSize = '0.85rem';
+                    
+                    header.appendChild(nameSpan);
+                    header.appendChild(valueSpan);
+                    
+                    const desc = document.createElement('div');
+                    desc.textContent = tunable.description;
+                    desc.style.fontSize = '0.75rem';
+                    desc.style.opacity = '0.7';
+                    desc.style.marginBottom = '5px';
+                    
+                    div.appendChild(header);
+                    div.appendChild(desc);
+                    
+                    if (tunable.editable) {
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'control-button';
+                        editBtn.textContent = '✏️ Edit';
+                        editBtn.style.fontSize = '0.75rem';
+                        editBtn.style.padding = '4px 12px';
+                        editBtn.onclick = () => editTunable(name, tunable.value, tunable.description);
+                        div.appendChild(editBtn);
+                    } else {
+                        const readonlyBadge = document.createElement('span');
+                        readonlyBadge.textContent = '🔒 Read-only';
+                        readonlyBadge.style.fontSize = '0.7rem';
+                        readonlyBadge.style.opacity = '0.5';
+                        div.appendChild(readonlyBadge);
+                    }
+                    
+                    tunablesContainer.appendChild(div);
+                });
+                
+            } catch (error) {
+                console.error('Failed to fetch tunables:', error);
+            }
+        }
+        
+        // Edit tunable value
+        async function editTunable(name, currentValue, description) {
+            const newValue = prompt(`Edit ${name}\\n\\n${description}\\n\\nCurrent value: ${currentValue}\\n\\nEnter new value:`, currentValue);
+            
+            if (newValue === null || newValue === currentValue) {
+                return; // User cancelled or no change
+            }
+            
+            try {
+                const response = await fetch('/api/system/tunables/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        value: newValue,
+                        old_value: currentValue
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ Success!\\n\\n${data.message}\\n\\nOld value: ${currentValue}\\nNew value: ${data.new_value}`);
+                    await fetchTunables(); // Refresh the list
+                } else {
+                    alert(`❌ Failed to set tunable\\n\\n${data.error || data.message}\\n\\n${data.suggestion || ''}`);
+                }
+                
+            } catch (error) {
+                alert(`❌ Error setting tunable\\n\\n${error.message}`);
+            }
+        }
+        
         // Initialize everything
         document.addEventListener('DOMContentLoaded', () => {
             initializeCharts();
@@ -665,12 +791,16 @@
             // Initial data fetch
             fetchComprehensiveStatus();
             fetchControllerDetails();
+            fetchTunables();
             
             // Set up real-time updates
             updateInterval = setInterval(() => {
                 fetchComprehensiveStatus();
                 fetchControllerDetails();
             }, 5000); // Update every 5 seconds
+            
+            // Update tunables less frequently (every 30 seconds)
+            setInterval(fetchTunables, 30000);
         });
     </script>
 </body>
