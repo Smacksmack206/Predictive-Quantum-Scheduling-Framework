@@ -13,13 +13,13 @@ DATA_FILES = [
     # Web dashboard templates (all existing files)
     ('templates', [
         'templates/battery_history.html',
+        'templates/battery_monitor.html',
         'templates/comprehensive_system_control.html',
         'templates/index.html',
         'templates/quantum_dashboard_enhanced.html',
         'templates/quantum_dashboard.html',
         'templates/technical_validation.html',
-        'templates/working_enhanced_eas_dashboard.html',
-        'templates/working_real_time_eas_monitor.html'
+        'templates/universal_dashboard.html'
     ]),
     
     # Static assets for web interface (all existing files)
@@ -76,6 +76,7 @@ OPTIONS = {
         'LSUIElement': True,  # Menu bar app (hide from dock)
         'NSHighResolutionCapable': True,
         'LSMinimumSystemVersion': '10.15',  # macOS Catalina and later for Intel Mac support
+        'LSArchitecturePriority': ['x86_64', 'arm64'],  # Prefer Intel on Intel Macs
         'CFBundleDocumentTypes': [],
         'NSRequiresAquaSystemAppearance': False,
         'LSApplicationCategoryType': 'public.app-category.utilities',
@@ -199,6 +200,7 @@ OPTIONS = {
     
     # Universal binary support for all Mac architectures
     'arch': 'universal2',     # Build universal binary for Intel + Apple Silicon
+    'force_system_tk': False, # Don't force system Tk on Intel Macs
     
     # Python framework bundling
     'use_pythonpath': False,   # Don't use system PYTHONPATH

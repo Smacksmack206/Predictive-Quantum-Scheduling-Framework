@@ -1,0 +1,31 @@
+🚀 PQS Framework 40-Qubit - Installation Instructions
+
+For Intel Mac (2020 MacBook):
+============================
+
+SUPER EASY INSTALLATION - NO TERMINAL NEEDED:
+
+1. Double-click "PQS Framework 40-Qubit Installer.dmg"
+2. Drag "PQS Framework 40-Qubit" to the Applications folder
+3. Go to Applications and double-click "PQS Framework 40-Qubit"
+4. Done! The app will launch automatically.
+
+What This App Does:
+==================
+✅ Real-time battery monitoring with quantum visualization
+✅ Advanced process management and optimization
+✅ 40-qubit quantum computing simulation
+✅ Intel Mac optimized performance
+✅ Beautiful dashboard with live metrics
+
+Troubleshooting:
+===============
+- If macOS asks about security, go to System Preferences > Security & Privacy and click "Open Anyway"
+- The app is completely self-contained - no Python or other software needed
+- Works on both Intel Macs (2020) and Apple Silicon Macs
+
+Support:
+========
+If you have any issues, the app includes built-in diagnostics and help.
+
+Enjoy your quantum-powered system optimization! 🎉
