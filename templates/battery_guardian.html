@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battery Guardian - Dynamic Learning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .app-list {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .app-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .app-name {
+            font-weight: 500;
+        }
+        
+        .app-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .pattern-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+        }
+        
+        .error {
+            background: rgba(255, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Battery Guardian</h1>
+        <div class="subtitle">Dynamic Learning & Proactive Protection</div>
+        <div class="subtitle" id="last-update" style="font-size: 0.9em; opacity: 0.7;"></div>
+        
+        <div id="loading" class="loading">Loading Battery Guardian data...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <div id="content" style="display: none;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Protections</div>
+                    <div class="stat-value" id="total-protections">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Savings</div>
+                    <div class="stat-value" id="total-savings">0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Apps Learned</div>
+                    <div class="stat-value" id="apps-learned">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Current Priorities</div>
+                    <div class="stat-value" id="current-priorities">0</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">🎯 Top Priority Apps (Dynamic)</div>
+                <div id="priority-apps" class="app-list"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">🔍 Learned Patterns</div>
+                <div id="learned-patterns" class="app-list"></div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">📊 Apps Being Analyzed</div>
+                <div id="apps-analyzed" class="app-list"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        async function loadGuardianStats() {
+            try {
+                const response = await fetch('/api/battery/guardian/stats');
+                const data = await response.json();
+                
+                if (!data.available) {
+                    document.getElementById('error').textContent = data.message || 'Battery Guardian not available';
+                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                }
+                
+                const stats = data.stats;
+                
+                // Update stats
+                document.getElementById('total-protections').textContent = stats.total_protections;
+                document.getElementById('total-savings').textContent = stats.total_savings.toFixed(1) + '%';
+                document.getElementById('apps-learned').textContent = stats.apps_learned;
+                document.getElementById('current-priorities').textContent = stats.current_priority_apps;
+                
+                // Update priority apps
+                const priorityAppsDiv = document.getElementById('priority-apps');
+                priorityAppsDiv.innerHTML = '';
+                
+                if (stats.top_priority_apps && stats.top_priority_apps.length > 0) {
+                    stats.top_priority_apps.forEach(app => {
+                        const appItem = document.createElement('div');
+                        appItem.className = 'app-item';
+                        appItem.innerHTML = `
+                            <div class="app-name">${app.name}</div>
+                            <div class="app-stats">
+                                <span>Impact: ${app.impact.toFixed(1)}</span>
+                                <span>Freq: ${app.frequency}</span>
+                                <span>Score: ${app.priority_score.toFixed(1)}</span>
+                            </div>
+                        `;
+                        priorityAppsDiv.appendChild(appItem);
+                    });
+                } else {
+                    priorityAppsDiv.innerHTML = '<div class="app-item">No priority apps learned yet</div>';
+                }
+                
+                // Update learned patterns
+                const patternsDiv = document.getElementById('learned-patterns');
+                patternsDiv.innerHTML = '';
+                
+                if (stats.learned_patterns && Object.keys(stats.learned_patterns).length > 0) {
+                    // Sort by confidence (highest first)
+                    const sortedPatterns = Object.entries(stats.learned_patterns)
+                        .sort((a, b) => b[1].confidence - a[1].confidence);
+                    
+                    sortedPatterns.forEach(([appName, patternData]) => {
+                        const confidence = (patternData.confidence * 100).toFixed(0);
+                        const isConfident = patternData.status === 'confident';
+                        const statusEmoji = isConfident ? '✅' : '📊';
+                        const statusText = isConfident ? 'Confident' : 'Learning';
+                        const observations = patternData.observations || 0;
+                        const consistency = patternData.consistency ? (patternData.consistency * 100).toFixed(0) : 0;
+                        
+                        const patternItem = document.createElement('div');
+                        patternItem.className = 'app-item';
+                        patternItem.style.opacity = isConfident ? '1' : '0.85';
+                        patternItem.style.cursor = 'pointer';
+                        patternItem.title = `${observations} observations, ${consistency}% consistent`;
+                        
+                        patternItem.innerHTML = `
+                            <div class="app-name">${statusEmoji} ${appName}</div>
+                            <div class="app-stats">
+                                <span class="pattern-badge">${patternData.pattern}</span>
+                                <span>${confidence}% ${statusText}</span>
+                                <span style="opacity: 0.7; font-size: 0.85em;">${observations} obs</span>
+                            </div>
+                        `;
+                        
+                        // Add click handler to show detailed breakdown
+                        patternItem.addEventListener('click', () => {
+                            if (patternData.breakdown) {
+                                const breakdown = patternData.breakdown;
+                                const details = `
+Confidence Breakdown for ${appName}:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Final Confidence: ${confidence}%
+
+Components:
+• Bayesian: ${(breakdown.bayesian * 100).toFixed(0)}%
+• Time-Weighted: ${(breakdown.time_weighted * 100).toFixed(0)}%
+• Variance: ${(breakdown.variance * 100).toFixed(0)}%
+• Sample Size: ${(breakdown.sample_size * 100).toFixed(0)}%
+• Validation: ${(breakdown.validation * 100).toFixed(0)}%
+
+Metrics:
+• Total Observations: ${observations}
+• Consistency: ${consistency}%
+• Pattern: ${patternData.pattern}
+                                `.trim();
+                                alert(details);
+                            }
+                        });
+                        
+                        patternsDiv.appendChild(patternItem);
+                    });
+                } else {
+                    // Show helpful message based on stats
+                    let message = 'Learning patterns...';
+                    if (stats.total_apps_analyzed > 0) {
+                        message = `Analyzing ${stats.total_apps_analyzed} apps. Patterns will appear after sufficient data collection (40%+ confidence).`;
+                    } else if (!stats.running) {
+                        message = 'Battery Guardian service not running. Start the service to begin learning patterns.';
+                    } else {
+                        message = 'Collecting initial data. Patterns will appear after monitoring app usage for a few minutes.';
+                    }
+                    patternsDiv.innerHTML = `<div class="app-item" style="opacity: 0.7;">${message}</div>`;
+                }
+                
+                // Update apps being analyzed
+                const appsAnalyzedDiv = document.getElementById('apps-analyzed');
+                appsAnalyzedDiv.innerHTML = '';
+                
+                if (stats.total_apps_analyzed > 0) {
+                    const patternCount = Object.keys(stats.learned_patterns || {}).length;
+                    const confidentCount = Object.values(stats.learned_patterns || {})
+                        .filter(p => p.status === 'confident').length;
+                    const learningCount = patternCount - confidentCount;
+                    
+                    // Show message about apps being analyzed
+                    const analysisItem = document.createElement('div');
+                    analysisItem.className = 'app-item';
+                    analysisItem.innerHTML = `
+                        <div class="app-name">📊 Analysis Summary</div>
+                        <div class="app-stats">
+                            <span>${stats.total_apps_analyzed} apps monitored</span>
+                            <span>${stats.apps_learned} learned</span>
+                            <span>${patternCount} patterns detected</span>
+                        </div>
+                    `;
+                    appsAnalyzedDiv.appendChild(analysisItem);
+                    
+                    // Show pattern breakdown
+                    if (patternCount > 0) {
+                        const breakdownItem = document.createElement('div');
+                        breakdownItem.className = 'app-item';
+                        breakdownItem.innerHTML = `
+                            <div class="app-name">🎯 Pattern Confidence</div>
+                            <div class="app-stats">
+                                <span>✅ ${confidentCount} confident (60%+)</span>
+                                <span>📊 ${learningCount} learning (40-60%)</span>
+                            </div>
+                        `;
+                        appsAnalyzedDiv.appendChild(breakdownItem);
+                    }
+                    
+                    // Add helpful tip
+                    const tipItem = document.createElement('div');
+                    tipItem.className = 'app-item';
+                    tipItem.style.opacity = '0.7';
+                    tipItem.style.fontSize = '0.9em';
+                    tipItem.innerHTML = `
+                        <div>💡 Tip: Patterns show as "Learning" (40-60%) or "Confident" (60%+). The Guardian continuously improves its predictions as you use your Mac.</div>
+                    `;
+                    appsAnalyzedDiv.appendChild(tipItem);
+                } else {
+                    appsAnalyzedDiv.innerHTML = '<div class="app-item" style="opacity: 0.7;">No apps analyzed yet. The Guardian will start monitoring once the service is running.</div>';
+                }
+                
+                // Show content
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                
+                // Update last update time
+                const now = new Date();
+                document.getElementById('last-update').textContent = 
+                    `Last updated: ${now.toLocaleTimeString()}`;
+                
+            } catch (error) {
+                document.getElementById('error').textContent = 'Error loading data: ' + error.message;
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        // Load data on page load
+        loadGuardianStats();
+        
+        // Refresh every 5 seconds for real-time updates
+        setInterval(loadGuardianStats, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+# PQS Framework App Bundle Requirements
+# Core dependencies needed for the macOS app bundle
+
+# Core App Framework
+rumps>=0.3.0              # Menu bar app framework
+psutil>=5.9.0             # System monitoring (CRITICAL)
+flask>=2.3.0              # Web dashboard server
+numpy>=1.24.0             # Quantum calculations
+
+# Build Tools
+py2app>=0.28.0            # macOS app bundling
+setuptools>=68.0.0        # Package setup
+wheel>=0.41.0             # Package building
+
+# Quantum Computing (Optional - will gracefully degrade if not available)
+cirq>=1.6.1               # Google Cirq quantum library
+tensorflow-macos>=2.15.0  # TensorFlow for macOS (Apple Silicon optimized)
+
+# Standard Library Enhancements
+typing-extensions>=4.7.0  # Enhanced typing support
+dataclasses>=0.6          # Data classes (Python 3.7+ compatibility)
+
+# Web Framework Dependencies
+Werkzeug>=2.3.0           # Flask dependency
+Jinja2>=3.1.0             # Template engine
+MarkupSafe>=2.1.0         # Safe string handling
+itsdangerous>=2.1.0       # Secure data serialization
+click>=8.1.0              # Command line interface
+
+# System Integration
+packaging>=23.0           # Package version handling
+importlib-metadata>=6.0   # Import system metadata
+
+# Optional Performance Enhancements (will be included if available)
+# These provide exponential improvements but app works without them
+tensorflow-metal>=1.1.0    # Apple Silicon GPU acceleration
+# qiskit>=0.45.0             # IBM Qiskit (optional)
+# pennylane>=0.32.0          # Xanadu PennyLane (optional)

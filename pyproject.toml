@@ -1,102 +1,61 @@
-[build-system]
-requires = ["briefcase"]
-
-[project]
-name = "pqs-framework"
-version = "4.0.0"
-description = "Universal Quantum Energy Management System for macOS"
-readme = "README.md"
-license = {text = "MIT"}
-authors = [
-    {name = "HM Media Labs", email = "contact@hmmedia.dev"}
-]
-requires-python = ">=3.9"
-dependencies = [
-    "rumps",
-    "psutil", 
-    "flask",
-    "numpy",
-    "Jinja2",
-    "Werkzeug",
-    "click",
-    "MarkupSafe",
-    "itsdangerous"
-]
-
-[project.urls]
-Homepage = "https://github.com/Smacksmack206/Predictive-Quantum-Scheduling-Framework"
-Repository = "https://github.com/Smacksmack206/Predictive-Quantum-Scheduling-Framework"
-
 [tool.briefcase]
-project_name = "PQS Framework 40-Qubit"
+project_name = "PQS Framework 48-Qubit"
 bundle = "com.pqsframework"
-version = "4.0.0"
-description = "Universal Quantum Energy Management System for macOS"
-author = "HM Media Labs"
-author_email = "contact@hmmedia.dev"
+version = "1.0.0"
+url = "https://github.com/yourusername/universal-pqs"
+license = {text = "MIT"}
+author = "hmMediaLabs"
+author_email = "cvallieu94@gmail.com"
 
-[tool.briefcase.app.pqs_framework]
-formal_name = "PQS Framework 40-Qubit"
-description = "Universal Quantum Energy Management System with real-time optimization for Intel and Apple Silicon Macs"
-sources = ["."]
-main_module = "pqs_framework"
+[tool.briefcase.app.pqsframework]
+formal_name = "PQS Framework 48-Qubit"
+description = "Quantum-ML Power Optimization System for macOS"
+long_description = """PQS Framework 48-Qubit is a world-first quantum-classical hybrid power optimization system for macOS.
 
-
-
-[tool.briefcase.app.pqs_framework.macOS]
-requires = [
-    "rumps",
-    "psutil", 
-    "flask",
-    "numpy",
-    "Jinja2",
-    "Werkzeug",
-    "click",
-    "MarkupSafe",
-    "itsdangerous",
-    "blinker"
+Features:
+- Real quantum computing (VQE, QAOA) via Qiskit
+- Machine learning (Transformer, LSTM, RL) for intelligent power management
+- Apple Silicon optimization (M1/M2/M3/M4)
+- Intel Mac support with optimized algorithms
+- Metal GPU acceleration for quantum simulation
+- Real-time battery and power monitoring
+- Web dashboard for comprehensive system control
+"""
+icon = "resources/icon"
+sources = [
+    "src/pqsframework",
+]
+test_sources = [
 ]
 
-# CRITICAL: Universal binary support for Intel and Apple Silicon
+requires = [
+    "rumps>=0.3.0",
+    "psutil>=5.9.0",
+    "flask>=2.3.0",
+    "numpy>=1.24.0",
+    "werkzeug>=2.3.0",
+    "jinja2>=3.1.0",
+    "markupsafe>=2.1.0",
+    "itsdangerous>=2.1.0",
+    "click>=8.1.0",
+    "packaging>=23.0",
+    "typing-extensions>=4.7.0",
+]
+
 universal_build = true
-codesign_identity = "-"
 
-# CRITICAL: Lower minimum macOS version for Intel Mac compatibility
-# macOS 10.15 (Catalina) supports both Intel and Apple Silicon transition
-system_requires = "macOS 10.15"
-
-# CRITICAL: Standalone build configuration - no Python required on target
-installer_background = "installer-background"
-installer_icon = "installer-icon"
-
-# App metadata optimized for both architectures
-[tool.briefcase.app.pqs_framework.macOS.info]
-CFBundleDisplayName = "PQS Framework - 40-Qubit Quantum System"
-CFBundleVersion = "4.0.0"
-CFBundleShortVersionString = "4.0.0"
-LSUIElement = true
-NSHighResolutionCapable = true
-
-# CRITICAL: Set minimum to macOS 10.15 for Intel Mac compatibility
-LSMinimumSystemVersion = "10.15.0"
-
-# CRITICAL: Prioritize x86_64 first for Intel Macs, then arm64
-LSArchitecturePriority = ["x86_64", "arm64"]
-
-# CRITICAL: Allow Rosetta translation for maximum compatibility
-LSRequiresNativeExecution = false
-
-# System permissions for both architectures
-NSSystemAdministrationUsageDescription = "PQS Framework needs system access for quantum energy optimization on Intel and Apple Silicon Macs."
-NSAppleEventsUsageDescription = "PQS Framework uses Apple Events for system integration across all Mac architectures."
-
-# Network permissions for web dashboard
-[tool.briefcase.app.pqs_framework.macOS.info.NSAppTransportSecurity]
-NSAllowsArbitraryLoads = true
-
-# Entitlements for system access on both architectures
-[tool.briefcase.app.pqs_framework.macOS.entitlements]
-"com.apple.security.automation.apple-events" = true
+[tool.briefcase.app.pqsframework.macOS.entitlement]
 "com.apple.security.network.client" = true
 "com.apple.security.network.server" = true
 "com.apple.security.files.user-selected.read-write" = true
+
+[tool.briefcase.app.pqsframework.macOS.app_packages]
+# Additional packages for macOS app bundle
+
+[build-system]
+requires = [
+    "setuptools>=60",
+    "wheel",
+    "briefcase>=0.3.0",
+]
+build-backend = "setuptools.build_meta"

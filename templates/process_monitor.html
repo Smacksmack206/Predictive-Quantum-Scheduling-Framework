@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Process Monitor - PQS Framework</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --dark-light: #1e293b;
+            --dark-lighter: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem 2rem;
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--text);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: var(--text);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .anomaly-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .anomaly-card:hover {
+            border-color: var(--danger);
+            box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2);
+        }
+
+        .anomaly-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .anomaly-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .severity-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .severity-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .severity-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .anomaly-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-item {
+            padding: 1rem;
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 12px;
+        }
+
+        .detail-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .recommendation {
+            padding: 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .process-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .process-pill {
+            padding: 0.5rem 1rem;
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .process-pill.kill {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--danger);
+        }
+
+        .process-pill.keep {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid var(--success);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(99, 102, 241, 0.3);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🔍 Intelligent Process Monitor</h1>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-primary" onclick="scanProcesses()">
+                    <span>🔄</span>
+                    <span>Scan Now</span>
+                </button>
+                <a href="/" class="btn btn-primary" style="text-decoration: none;">
+                    <span>←</span>
+                    <span>Back to Dashboard</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalApps">-</div>
+                <div class="stat-label">Apps Monitored</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalProcesses">-</div>
+                <div class="stat-label">Total Processes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="anomalyCount">-</div>
+                <div class="stat-label">Anomalies Detected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="profilesLearned">-</div>
+                <div class="stat-label">Profiles Learned</div>
+            </div>
+        </div>
+
+        <div id="anomaliesContainer">
+            <div class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <h2>Ready to Scan</h2>
+                <p>Click "Scan Now" to analyze running processes</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function scanProcesses() {
+            const container = document.getElementById('anomaliesContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="loading" style="width: 60px; height: 60px; border-width: 5px;"></div>
+                    <h2 style="margin-top: 2rem;">Scanning Processes...</h2>
+                    <p>Analyzing system and learning patterns</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/process-monitor/scan', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                // Update stats
+                document.getElementById('totalApps').textContent = data.total_apps || 0;
+                document.getElementById('totalProcesses').textContent = data.total_processes || 0;
+                document.getElementById('anomalyCount').textContent = data.anomalies?.length || 0;
+                document.getElementById('profilesLearned').textContent = data.profiles_learned || 0;
+
+                // Display anomalies
+                if (data.anomalies && data.anomalies.length > 0) {
+                    container.innerHTML = '';
+                    data.anomalies.forEach(anomaly => {
+                        container.innerHTML += createAnomalyCard(anomaly);
+                    });
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">✅</div>
+                            <h2>All Clear!</h2>
+                            <p>No anomalies detected - all processes are running normally</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <h2>Error</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function createAnomalyCard(anomaly) {
+            const killRec = anomaly.kill_recommendation;
+            const severityClass = anomaly.severity >= 20 ? 'severity-high' : 'severity-medium';
+            
+            return `
+                <div class="anomaly-card">
+                    <div class="anomaly-header">
+                        <div class="anomaly-title">${anomaly.app_name}</div>
+                        <div class="severity-badge ${severityClass}">
+                            Severity: ${anomaly.severity.toFixed(1)}
+                        </div>
+                    </div>
+
+                    <div class="anomaly-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Instances</div>
+                            <div class="detail-value">${anomaly.instance_count}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Normal Range</div>
+                            <div class="detail-value">${anomaly.normal_range[0]}-${anomaly.normal_range[1]}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">CPU Usage</div>
+                            <div class="detail-value">${anomaly.total_cpu.toFixed(1)}%</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Memory Usage</div>
+                            <div class="detail-value">${anomaly.total_memory.toFixed(1)}%</div>
+                        </div>
+                    </div>
+
+                    <div class="recommendation">
+                        <strong>🎯 Issue:</strong> ${anomaly.reason}
+                    </div>
+
+                    ${killRec.should_kill ? `
+                        <div class="recommendation">
+                            <strong>💡 Recommendation:</strong> ${killRec.reason}
+                        </div>
+
+                        <div style="margin-top: 1rem;">
+                            <strong style="color: var(--success);">Keep (${killRec.keep_pids.length}):</strong>
+                            <div class="process-list">
+                                ${killRec.keep_pids.map(pid => `
+                                    <span class="process-pill keep">PID ${pid}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1rem;">
+                            <strong style="color: var(--danger);">Kill (${killRec.kill_pids.length}):</strong>
+                            <div class="process-list">
+                                ${killRec.kill_pids.map(pid => `
+                                    <span class="process-pill kill">PID ${pid}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                            <button class="btn btn-danger" onclick="killProcesses('${anomaly.app_name}', ${JSON.stringify(killRec.kill_pids).replace(/"/g, '&quot;')})">
+                                <span>⚠️</span>
+                                <span>Kill ${killRec.kill_pids.length} Processes</span>
+                            </button>
+                        </div>
+                    ` : `
+                        <div class="recommendation">
+                            <strong>✓ Status:</strong> ${killRec.reason}
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        async function killProcesses(appName, pids) {
+            if (!confirm(`Are you sure you want to kill ${pids.length} processes for ${appName}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/process-monitor/kill', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pids })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ Successfully killed ${data.killed} processes`);
+                    scanProcesses(); // Refresh
+                } else {
+                    alert(`❌ Error: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        // Auto-scan on load
+        scanProcesses();
+    </script>
+</body>
+</html>

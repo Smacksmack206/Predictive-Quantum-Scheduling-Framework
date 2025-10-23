@@ -1,0 +1,7 @@
+Requirement already satisfied: qiskit in ./quantum_ml_venv/lib/python3.13/site-packages (2.2.1)
+Requirement already satisfied: rustworkx>=0.15.0 in ./quantum_ml_venv/lib/python3.13/site-packages (from qiskit) (0.17.1)
+Requirement already satisfied: numpy<3,>=1.17 in ./quantum_ml_venv/lib/python3.13/site-packages (from qiskit) (2.3.4)
+Requirement already satisfied: scipy>=1.5 in ./quantum_ml_venv/lib/python3.13/site-packages (from qiskit) (1.16.2)
+Requirement already satisfied: dill>=0.3 in ./quantum_ml_venv/lib/python3.13/site-packages (from qiskit) (0.4.0)
+Requirement already satisfied: stevedore>=3.0.0 in ./quantum_ml_venv/lib/python3.13/site-packages (from qiskit) (5.5.0)
+Requirement already satisfied: typing-extensions in ./quantum_ml_venv/lib/python3.13/site-packages (from qiskit) (4.15.0)

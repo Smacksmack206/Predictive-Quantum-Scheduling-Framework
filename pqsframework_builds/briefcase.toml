@@ -1,0 +1,126 @@
+[briefcase]
+# Universal PQS Framework 48-Qubit - macOS Universal Binary
+target_version = "0.3.20"
+
+[paths]
+app_path = "PQS Framework 48-Qubit.app/Contents/Resources/app"
+app_packages_path = "PQS Framework 48-Qubit.app/Contents/Resources/app_packages"
+info_plist_path = "PQS Framework 48-Qubit.app/Contents/Info.plist"
+entitlements_path = "entitlements.plist"
+support_path = "PQS Framework 48-Qubit.app/Contents/Frameworks"
+runtime_path = "Python.xcframework/macos-arm64_x86_64/Python.framework"
+support_revision = 10
+stub_binary_revision = 12
+cleanup_paths = [
+    "support/Python.xcframework/**/Headers",
+    "support/Python.xcframework/**/include",
+    "support/Python.xcframework/**/python*/config-*-darwin",
+    "support/Python.xcframework/**/pkgconfig",
+]
+icon = "PQS Framework 48-Qubit.app/Contents/Resources/pqs-icon.icns"
+
+[bundle]
+bundle_identifier = "com.pqs.universal"
+version = "1.0.0"
+url = "https://github.com/quantum-pqs/framework"
+license = "MIT"
+author = "PQS Framework Team"
+author_email = "info@pqs-framework.com"
+
+[bundle."PQS Framework 48-Qubit"]
+formal_name = "PQS Framework 48-Qubit"
+description = "Universal Quantum ML Optimization Framework for All Macs"
+icon = "pqs-icon.icns"
+sources = ["universal_pqs_app.py"]
+hidden_imports = [
+    "rumps",
+    "psutil",
+    "flask",
+    "numpy",
+    "torch",
+    "quantum_ml_integration",
+    "real_quantum_ml_system",
+    "apple_silicon_quantum_accelerator",
+    "intel_optimized_quantum_ml",
+    "metal_quantum_simulator",
+    "quantum_circuit_manager_40",
+    "quantum_entanglement_engine",
+    "quantum_ml_hybrid",
+    "quantum_ml_interface",
+    "quantum_ml_persistence",
+    "quantum_performance_benchmarking",
+    "quantum_visualization_engine",
+    "real_ml_system",
+    "real_quantum_engine",
+]
+template = "macOS"
+template_branch = "main"
+output_format = "app"
+url = "https://github.com/quantum-pqs/framework"
+license = "MIT"
+author = "PQS Framework Team"
+author_email = "info@pqs-framework.com"
+
+[bundle."PQS Framework 48-Qubit".macOS]
+universal_build = true
+supported_architectures = ["x86_64", "arm64"]
+requires = [
+    "rumps>=1.3.0",
+    "psutil>=5.9.0",
+    "flask>=2.3.0",
+    "numpy>=1.24.0",
+    "torch>=2.0.0",
+    "quantum_ml_integration",
+    "real_quantum_ml_system",
+    "apple_silicon_quantum_accelerator",
+    "intel_optimized_quantum_ml",
+    "metal_quantum_simulator",
+    "quantum_circuit_manager_40",
+    "quantum_entanglement_engine",
+    "quantum_ml_hybrid",
+    "quantum_ml_interface",
+    "quantum_ml_persistence",
+    "quantum_performance_benchmarking",
+    "quantum_visualization_engine",
+    "real_ml_system",
+    "real_quantum_engine",
+]
+test_requires = [
+    "pytest>=7.0.0",
+]
+test_sources = ["tests"]
+
+[bundle."PQS Framework 48-Qubit".macOS.app]
+info_plist = {
+    LSMinimumSystemVersion = "15.0",
+    LSArchitecturePriority = ["x86_64", "arm64"],
+    NSHighResolutionCapable = true,
+    NSSupportsAutomaticGraphicsSwitching = true,
+    LSBackgroundOnly = true,
+    LSUIElement = true,
+    NSRequiresAquaSystemAppearance = false,
+    CFBundleShortVersionString = "1.0.0",
+    CFBundleVersion = "1.0.0",
+    CFBundleDisplayName = "PQS Framework 48-Qubit",
+    CFBundleName = "PQS Framework 48-Qubit",
+    CFBundleIdentifier = "com.pqs.universal",
+    CFBundleExecutable = "PQS Framework 48-Qubit",
+    CFBundleIconFile = "pqs-icon.icns",
+    CFBundlePackageType = "APPL",
+    CFBundleSignature = "????",
+    NSHumanReadableCopyright = "© 2025 PQS Framework Team",
+    CFBundleGetInfoString = "Universal Quantum ML Optimization Framework for All Macs",
+    LSApplicationCategoryType = "public.app-category.productivity",
+    LSMinimumSystemVersionByArchitecture = {
+        x86_64 = "15.0",
+        arm64 = "15.0",
+    },
+}
+entitlements = {
+    "com.apple.security.app-sandbox" = true,
+    "com.apple.security.network.client" = true,
+    "com.apple.security.network.server" = true,
+    "com.apple.security.files.user-selected.read-only" = true,
+    "com.apple.security.files.downloads.read-only" = true,
+    "com.apple.security.automation.apple-events" = true,
+}
