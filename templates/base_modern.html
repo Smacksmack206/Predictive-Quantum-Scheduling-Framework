@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ darkMode: true }" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PQS Framework - Quantum-ML System{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        quantum: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        @keyframes quantum-pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(14, 165, 233, 0.8); }
+        }
+        .quantum-glow {
+            animation: quantum-pulse 2s ease-in-out infinite;
+        }
+        @keyframes slide-in {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .slide-in {
+            animation: slide-in 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-quantum-500">⚛️ PQS</span>
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="/modern" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition">Dashboard</a>
+                        <a href="/quantum" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition">Quantum</a>
+                        <a href="/battery-monitor" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition">Battery</a>
+                        <a href="/system-control" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition">Control</a>
+                    </div>
+                </div>
+                
+                <!-- Status indicator -->
+                <div x-data="statusWidget()" class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 rounded-full bg-green-500 quantum-glow"></div>
+                        <span class="text-sm" x-text="status"></span>
+                    </div>
+                    <span class="text-sm text-gray-400" x-text="energySaved"></span>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Global Alpine.js components -->
+    <script>
+        function statusWidget() {
+            return {
+                status: 'Initializing...',
+                energySaved: '0%',
+                
+                init() {
+                    this.fetchStatus();
+                    setInterval(() => this.fetchStatus(), 5000);
+                },
+                
+                async fetchStatus() {
+                    try {
+                        const response = await fetch('/api/status');
+                        const data = await response.json();
+                        this.status = data.status || 'Active';
+                        this.energySaved = `${(data.energy_saved || 0).toFixed(1)}% saved`;
+                    } catch (error) {
+                        console.error('Status fetch error:', error);
+                        this.status = 'Error';
+                    }
+                }
+            }
+        }
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

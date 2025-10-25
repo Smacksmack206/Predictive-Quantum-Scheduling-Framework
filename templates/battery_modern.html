@@ -1,0 +1,303 @@
+{% extends "base_modern.html" %}
+
+{% block content %}
+<div x-data="batteryDashboard()" class="space-y-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-4xl font-bold mb-2">🔋 Battery Guardian</h1>
+            <p class="text-gray-400">Quantum-ML powered battery optimization</p>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div :class="charging ? 'bg-green-900' : 'bg-gray-800'" 
+                 class="px-4 py-2 rounded-lg border border-gray-700">
+                <span x-text="charging ? '⚡ Charging' : '🔋 On Battery'"></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Battery Status Card -->
+    <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-8 border border-gray-700">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <div class="text-6xl font-bold mb-2" 
+                     :class="batteryLevel > 40 ? 'text-green-400' : batteryLevel > 20 ? 'text-yellow-400' : 'text-red-400'"
+                     x-text="batteryLevel + '%'"></div>
+                <div class="text-gray-400">Current Battery Level</div>
+            </div>
+            <div class="text-8xl" x-text="getBatteryIcon()"></div>
+        </div>
+        
+        <!-- Battery Bar -->
+        <div class="bg-gray-950 rounded-full h-4 overflow-hidden">
+            <div class="h-4 rounded-full transition-all duration-500"
+                 :class="batteryLevel > 40 ? 'bg-green-500' : batteryLevel > 20 ? 'bg-yellow-500' : 'bg-red-500'"
+                 :style="`width: ${batteryLevel}%`"></div>
+        </div>
+        
+        <!-- Time Remaining -->
+        <div class="mt-4 flex justify-between text-sm text-gray-400">
+            <span x-text="timeRemaining"></span>
+            <span x-text="health + '% health'"></span>
+        </div>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <!-- Energy Saved -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-gray-400 text-sm">Energy Saved</span>
+                <span class="text-2xl">💚</span>
+            </div>
+            <div class="text-3xl font-bold text-green-400" x-text="energySaved + '%'"></div>
+            <div class="text-xs text-gray-500 mt-1">Since last charge</div>
+        </div>
+        
+        <!-- Power Draw -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-gray-400 text-sm">Power Draw</span>
+                <span class="text-2xl">⚡</span>
+            </div>
+            <div class="text-3xl font-bold text-yellow-400" x-text="powerDraw + 'W'"></div>
+            <div class="text-xs text-gray-500 mt-1">Current consumption</div>
+        </div>
+        
+        <!-- Cycles -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-gray-400 text-sm">Charge Cycles</span>
+                <span class="text-2xl">🔄</span>
+            </div>
+            <div class="text-3xl font-bold text-blue-400" x-text="cycles"></div>
+            <div class="text-xs text-gray-500 mt-1">Total cycles</div>
+        </div>
+        
+        <!-- Temperature -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-gray-400 text-sm">Temperature</span>
+                <span class="text-2xl">🌡️</span>
+            </div>
+            <div class="text-3xl font-bold text-cyan-400" x-text="temperature + '°C'"></div>
+            <div class="text-xs text-gray-500 mt-1">Battery temp</div>
+        </div>
+    </div>
+    
+    <!-- Battery History Chart -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-2xl font-bold mb-4">Battery Level History</h2>
+        <canvas id="batteryChart" height="80"></canvas>
+    </div>
+    
+    <!-- Power Hungry Apps -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-2xl font-bold mb-4">Power Hungry Applications</h2>
+        <div class="space-y-3">
+            <template x-for="app in powerHungryApps" :key="app.name">
+                <div class="flex items-center justify-between bg-gray-900 rounded-lg p-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl" x-text="app.icon"></span>
+                        <div>
+                            <div class="font-bold" x-text="app.name"></div>
+                            <div class="text-sm text-gray-400" x-text="app.power + 'W'"></div>
+                        </div>
+                    </div>
+                    <button @click="suspendApp(app.name)" 
+                            class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm transition">
+                        Suspend
+                    </button>
+                </div>
+            </template>
+        </div>
+    </div>
+    
+    <!-- Protection Settings -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-2xl font-bold mb-4">Battery Protection</h2>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="font-bold">Auto Protection</div>
+                    <div class="text-sm text-gray-400">Automatically protect battery health</div>
+                </div>
+                <button @click="toggleProtection('auto')" 
+                        :class="autoProtection ? 'bg-green-600' : 'bg-gray-600'"
+                        class="px-4 py-2 rounded transition">
+                    <span x-text="autoProtection ? 'ON' : 'OFF'"></span>
+                </button>
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="font-bold">Aggressive Mode</div>
+                    <div class="text-sm text-gray-400">Maximum battery savings</div>
+                </div>
+                <button @click="toggleProtection('aggressive')" 
+                        :class="aggressiveMode ? 'bg-green-600' : 'bg-gray-600'"
+                        class="px-4 py-2 rounded transition">
+                    <span x-text="aggressiveMode ? 'ON' : 'OFF'"></span>
+                </button>
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="font-bold">Quantum Optimization</div>
+                    <div class="text-sm text-gray-400">Use quantum algorithms for battery management</div>
+                </div>
+                <button @click="toggleProtection('quantum')" 
+                        :class="quantumMode ? 'bg-green-600' : 'bg-gray-600'"
+                        class="px-4 py-2 rounded transition">
+                    <span x-text="quantumMode ? 'ON' : 'OFF'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function batteryDashboard() {
+    return {
+        batteryLevel: 0,
+        charging: false,
+        timeRemaining: '0:00',
+        health: 100,
+        energySaved: 0,
+        powerDraw: 0,
+        cycles: 0,
+        temperature: 0,
+        powerHungryApps: [],
+        autoProtection: true,
+        aggressiveMode: true,
+        quantumMode: true,
+        chart: null,
+        
+        init() {
+            this.fetchBatteryStatus();
+            this.initChart();
+            setInterval(() => this.fetchBatteryStatus(), 5000);
+        },
+        
+        async fetchBatteryStatus() {
+            try {
+                const response = await fetch('/api/battery/status');
+                const data = await response.json();
+                
+                // Extract from actual API structure
+                this.batteryLevel = data.battery_level || 0;
+                this.charging = data.power_plugged || false;
+                this.timeRemaining = data.time_remaining || '0:00';
+                this.health = data.battery_health || 100;
+                this.energySaved = (data.current_savings_rate || 0).toFixed(1);
+                this.powerDraw = (data.power_usage_watts || data.estimated_power_draw || 0).toFixed(1);
+                this.cycles = data.charging_cycles || 0;
+                this.temperature = (data.temperature || 25).toFixed(1);
+                
+                // Mock power hungry apps for now
+                this.powerHungryApps = [
+                    { name: 'Chrome', icon: '🌐', power: '15.2' },
+                    { name: 'VS Code', icon: '💻', power: '8.5' },
+                    { name: 'Slack', icon: '💬', power: '5.3' }
+                ];
+                
+                this.updateChart(data);
+            } catch (error) {
+                console.error('Battery status fetch error:', error);
+            }
+        },
+        
+        getBatteryIcon() {
+            if (this.charging) return '⚡';
+            if (this.batteryLevel > 80) return '🔋';
+            if (this.batteryLevel > 40) return '🔋';
+            if (this.batteryLevel > 20) return '🪫';
+            return '🪫';
+        },
+        
+        initChart() {
+            const ctx = document.getElementById('batteryChart');
+            this.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Battery Level (%)',
+                        data: [],
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        },
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
+                        }
+                    }
+                }
+            });
+        },
+        
+        updateChart(data) {
+            if (!this.chart) return;
+            
+            const now = new Date().toLocaleTimeString();
+            this.chart.data.labels.push(now);
+            this.chart.data.datasets[0].data.push(data.level || 0);
+            
+            if (this.chart.data.labels.length > 20) {
+                this.chart.data.labels.shift();
+                this.chart.data.datasets[0].data.shift();
+            }
+            
+            this.chart.update('none');
+        },
+        
+        async suspendApp(appName) {
+            try {
+                await fetch('/api/battery/suspend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ app: appName })
+                });
+                alert(`✅ ${appName} suspended`);
+                this.fetchBatteryStatus();
+            } catch (error) {
+                alert('❌ Failed to suspend app');
+            }
+        },
+        
+        async toggleProtection(mode) {
+            if (mode === 'auto') this.autoProtection = !this.autoProtection;
+            if (mode === 'aggressive') this.aggressiveMode = !this.aggressiveMode;
+            if (mode === 'quantum') this.quantumMode = !this.quantumMode;
+            
+            try {
+                await fetch('/api/battery/protection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        auto: this.autoProtection,
+                        aggressive: this.aggressiveMode,
+                        quantum: this.quantumMode
+                    })
+                });
+            } catch (error) {
+                console.error('Protection toggle error:', error);
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

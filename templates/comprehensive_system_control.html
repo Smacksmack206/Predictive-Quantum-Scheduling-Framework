@@ -1111,8 +1111,70 @@
             }
         });
 
+        // Notification system
+        function showNotification(message, type = 'info') {
+            // Create notification element if it doesn't exist
+            let notification = document.getElementById('notification-toast');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'notification-toast';
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 10000;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    animation: slideIn 0.3s ease-out;
+                    max-width: 400px;
+                `;
+                document.body.appendChild(notification);
+                
+                // Add animation styles
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(400px); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(400px); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Set color based on type
+            const colors = {
+                'success': '#10b981',
+                'error': '#ef4444',
+                'warning': '#f59e0b',
+                'info': '#3b82f6'
+            };
+            notification.style.backgroundColor = colors[type] || colors['info'];
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 300);
+            }, 3000);
+        }
+
         // Scheduler control functions
         async function applySchedulerSettings() {
+            const button = event.target;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '⏳ Applying...';
+            
             try {
                 const settings = {
                     scheduler_mode: document.getElementById('scheduler-mode').value,
@@ -1121,6 +1183,8 @@
                     process_affinity: 'auto'
                 };
                 
+                console.log('Applying scheduler settings:', settings);
+                
                 const response = await fetch('/api/system/scheduler', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1128,16 +1192,26 @@
                 });
                 
                 const data = await response.json();
+                console.log('Scheduler response:', data);
                 
-                if (data.success) {
+                if (response.ok && data.success) {
                     showNotification('🎯 Scheduler settings applied successfully!', 'success');
                     // Refresh data to show updated scheduler state
-                    setTimeout(refreshData, 1000);
+                    setTimeout(() => {
+                        fetchComprehensiveStatus();
+                        fetchControllerDetails();
+                    }, 1000);
                 } else {
-                    showNotification('❌ Failed to apply scheduler settings', 'error');
+                    const errorMsg = data.error || 'Failed to apply scheduler settings';
+                    showNotification(`❌ ${errorMsg}`, 'error');
+                    console.error('Scheduler error:', data);
                 }
             } catch (error) {
-                showNotification('❌ Error applying scheduler settings', 'error');
+                console.error('Scheduler settings error:', error);
+                showNotification(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                button.disabled = false;
+                button.textContent = originalText;
             }
         }
         

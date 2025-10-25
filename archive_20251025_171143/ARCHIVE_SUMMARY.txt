@@ -1,0 +1,40 @@
+PQS Framework Archive
+Created: 2025-10-25 17:11:44.020351
+
+Archived:
+  - 11 directories
+  - 54 Python files
+  - 34 markdown files
+  - 22 other files
+
+Total: 121 items
+
+Active files kept in root:
+  - .gitignore
+  - .python-version
+  - ACTIVE_FILES_VERIFIED.md
+  - AGGRESSIVE_IDLE_MANAGEMENT.md
+  - PROJECT_ANALYSIS_AND_IMPROVEMENTS.md
+  - QUANTUM_MAX_SCHEDULER.md
+  - QUANTUM_ML_IDLE_INTELLIGENCE.md
+  - README.md
+  - __init__.py
+  - __main__.py
+  - aggressive_idle_manager.py
+  - auto_battery_protection.py
+  - cleanup_and_organize.py
+  - execute_cleanup.py
+  - intelligent_process_monitor.py
+  - macos_power_metrics.py
+  - pyproject.toml
+  - qiskit_quantum_engine.py
+  - quantum_battery_guardian.py
+  - quantum_max_integration.py
+  - quantum_max_scheduler.py
+  - quantum_ml_idle_optimizer.py
+  - quantum_ml_integration.py
+  - quantum_ml_persistence.py
+  - quantum_process_optimizer.py
+  - real_quantum_ml_system.py
+  - requirements_quantum_ml.txt
+  - universal_pqs_app.py

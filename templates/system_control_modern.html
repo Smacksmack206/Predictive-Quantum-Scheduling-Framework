@@ -1,0 +1,313 @@
+{% extends "base_modern.html" %}
+
+{% block content %}
+<div x-data="systemControl()" class="space-y-8">
+    <!-- Header -->
+    <div>
+        <h1 class="text-4xl font-bold mb-2">⚙️ System Control</h1>
+        <p class="text-gray-400">Comprehensive system management and monitoring</p>
+    </div>
+    
+    <!-- System Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- CPU -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-gray-400">CPU Usage</span>
+                <span class="text-2xl">🖥️</span>
+            </div>
+            <div class="text-4xl font-bold mb-2" x-text="cpuUsage + '%'"></div>
+            <div class="bg-gray-900 rounded-full h-2">
+                <div class="bg-blue-500 h-2 rounded-full transition-all" 
+                     :style="`width: ${cpuUsage}%`"></div>
+            </div>
+        </div>
+        
+        <!-- Memory -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-gray-400">Memory Usage</span>
+                <span class="text-2xl">💾</span>
+            </div>
+            <div class="text-4xl font-bold mb-2" x-text="memoryUsage + '%'"></div>
+            <div class="bg-gray-900 rounded-full h-2">
+                <div class="bg-purple-500 h-2 rounded-full transition-all" 
+                     :style="`width: ${memoryUsage}%`"></div>
+            </div>
+        </div>
+        
+        <!-- Disk -->
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-gray-400">Disk Usage</span>
+                <span class="text-2xl">💿</span>
+            </div>
+            <div class="text-4xl font-bold mb-2" x-text="diskUsage + '%'"></div>
+            <div class="bg-gray-900 rounded-full h-2">
+                <div class="bg-green-500 h-2 rounded-full transition-all" 
+                     :style="`width: ${diskUsage}%`"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Process Monitor -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold">Running Processes</h2>
+            <button @click="refreshProcesses()" 
+                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition">
+                🔄 Refresh
+            </button>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="text-left text-gray-400 border-b border-gray-700">
+                        <th class="pb-2">Process</th>
+                        <th class="pb-2">CPU %</th>
+                        <th class="pb-2">Memory</th>
+                        <th class="pb-2">Status</th>
+                        <th class="pb-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template x-for="process in processes" :key="process.pid">
+                        <tr class="border-b border-gray-700/50">
+                            <td class="py-3">
+                                <div class="font-bold" x-text="process.name"></div>
+                                <div class="text-xs text-gray-500" x-text="'PID: ' + process.pid"></div>
+                            </td>
+                            <td x-text="process.cpu + '%'"></td>
+                            <td x-text="process.memory"></td>
+                            <td>
+                                <span :class="process.status === 'running' ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-300'"
+                                      class="px-2 py-1 rounded text-xs" 
+                                      x-text="process.status"></span>
+                            </td>
+                            <td>
+                                <button @click="killProcess(process.pid)" 
+                                        class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm transition">
+                                    Kill
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Scheduler Settings -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-2xl font-bold mb-4">Scheduler Settings</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Idle Thresholds -->
+            <div>
+                <label class="block text-sm font-bold mb-2">Suspend Delay (seconds)</label>
+                <input type="number" x-model="suspendDelay" 
+                       class="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
+                       @change="updateSettings()">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-bold mb-2">Sleep Delay (seconds)</label>
+                <input type="number" x-model="sleepDelay" 
+                       class="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
+                       @change="updateSettings()">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-bold mb-2">CPU Idle Threshold (%)</label>
+                <input type="number" x-model="cpuThreshold" step="0.1"
+                       class="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
+                       @change="updateSettings()">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-bold mb-2">Optimization Interval (seconds)</label>
+                <input type="number" x-model="optimizationInterval" 
+                       class="w-full bg-gray-900 border border-gray-700 rounded px-4 py-2 text-white"
+                       @change="updateSettings()">
+            </div>
+        </div>
+        
+        <div class="mt-6 flex space-x-4">
+            <button @click="saveSettings()" 
+                    class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded font-bold transition">
+                💾 Save Settings
+            </button>
+            <button @click="resetSettings()" 
+                    class="bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded font-bold transition">
+                🔄 Reset to Defaults
+            </button>
+        </div>
+    </div>
+    
+    <!-- System Actions -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-2xl font-bold mb-4">System Actions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <button @click="systemAction('optimize')" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition">
+                🚀 Optimize Now
+            </button>
+            <button @click="systemAction('cleanup')" 
+                    class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-lg transition">
+                🧹 Clean Memory
+            </button>
+            <button @click="systemAction('suspend_idle')" 
+                    class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-4 px-6 rounded-lg transition">
+                😴 Suspend Idle Apps
+            </button>
+            <button @click="systemAction('export_logs')" 
+                    class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 px-6 rounded-lg transition">
+                📋 Export Logs
+            </button>
+        </div>
+    </div>
+    
+    <!-- System Info -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-2xl font-bold mb-4">System Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div class="flex justify-between">
+                <span class="text-gray-400">Platform:</span>
+                <span class="font-bold" x-text="systemInfo.platform"></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-400">Architecture:</span>
+                <span class="font-bold" x-text="systemInfo.architecture"></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-400">Python Version:</span>
+                <span class="font-bold" x-text="systemInfo.python_version"></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-400">Qiskit Version:</span>
+                <span class="font-bold" x-text="systemInfo.qiskit_version"></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-400">Uptime:</span>
+                <span class="font-bold" x-text="systemInfo.uptime"></span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-400">PQS Version:</span>
+                <span class="font-bold" x-text="systemInfo.pqs_version"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function systemControl() {
+    return {
+        cpuUsage: 0,
+        memoryUsage: 0,
+        diskUsage: 0,
+        processes: [],
+        suspendDelay: 30,
+        sleepDelay: 120,
+        cpuThreshold: 5.0,
+        optimizationInterval: 10,
+        systemInfo: {},
+        
+        init() {
+            this.fetchSystemStatus();
+            this.fetchSettings();
+            setInterval(() => this.fetchSystemStatus(), 3000);
+        },
+        
+        async fetchSystemStatus() {
+            try {
+                const response = await fetch('/api/system/status');
+                const data = await response.json();
+                
+                this.cpuUsage = (data.cpu_usage || 0).toFixed(1);
+                this.memoryUsage = (data.memory_usage || 0).toFixed(1);
+                this.diskUsage = (data.disk_usage || 0).toFixed(1);
+                this.processes = data.processes || [];
+                this.systemInfo = data.system_info || {};
+            } catch (error) {
+                console.error('System status fetch error:', error);
+            }
+        },
+        
+        async fetchSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                const data = await response.json();
+                
+                this.suspendDelay = data.suspend_delay || 30;
+                this.sleepDelay = data.sleep_delay || 120;
+                this.cpuThreshold = data.cpu_threshold || 5.0;
+                this.optimizationInterval = data.optimization_interval || 10;
+            } catch (error) {
+                console.error('Settings fetch error:', error);
+            }
+        },
+        
+        async saveSettings() {
+            try {
+                await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        suspend_delay: this.suspendDelay,
+                        sleep_delay: this.sleepDelay,
+                        cpu_threshold: this.cpuThreshold,
+                        optimization_interval: this.optimizationInterval
+                    })
+                });
+                alert('✅ Settings saved successfully!');
+            } catch (error) {
+                alert('❌ Failed to save settings');
+            }
+        },
+        
+        async resetSettings() {
+            this.suspendDelay = 30;
+            this.sleepDelay = 120;
+            this.cpuThreshold = 5.0;
+            this.optimizationInterval = 10;
+            await this.saveSettings();
+        },
+        
+        async refreshProcesses() {
+            await this.fetchSystemStatus();
+        },
+        
+        async killProcess(pid) {
+            if (!confirm(`Kill process ${pid}?`)) return;
+            
+            try {
+                await fetch('/api/system/kill', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pid: pid })
+                });
+                alert('✅ Process killed');
+                this.refreshProcesses();
+            } catch (error) {
+                alert('❌ Failed to kill process');
+            }
+        },
+        
+        async systemAction(action) {
+            try {
+                const response = await fetch(`/api/system/${action}`, { method: 'POST' });
+                const data = await response.json();
+                alert(`✅ ${data.message || 'Action completed'}`);
+                this.fetchSystemStatus();
+            } catch (error) {
+                alert('❌ Action failed');
+            }
+        },
+        
+        updateSettings() {
+            // Auto-save on change (debounced in production)
+        }
+    }
+}
+</script>
+{% endblock %}
