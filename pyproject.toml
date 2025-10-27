@@ -1,61 +1,35 @@
 [tool.briefcase]
-project_name = "PQS Framework 48-Qubit"
-bundle = "com.pqsframework"
+project_name = "PQS Framework"
+bundle = "com.pqs"
 version = "1.0.0"
-url = "https://github.com/yourusername/universal-pqs"
-license = {text = "MIT"}
-author = "hmMediaLabs"
-author_email = "cvallieu94@gmail.com"
+url = "https://github.com/pqs/framework"
+author = "PQS Framework"
+author_email = "info@pqs.framework"
 
-[tool.briefcase.app.pqsframework]
-formal_name = "PQS Framework 48-Qubit"
-description = "Quantum-ML Power Optimization System for macOS"
-long_description = """PQS Framework 48-Qubit is a world-first quantum-classical hybrid power optimization system for macOS.
-
-Features:
-- Real quantum computing (VQE, QAOA) via Qiskit
-- Machine learning (Transformer, LSTM, RL) for intelligent power management
-- Apple Silicon optimization (M1/M2/M3/M4)
-- Intel Mac support with optimized algorithms
-- Metal GPU acceleration for quantum simulation
-- Real-time battery and power monitoring
-- Web dashboard for comprehensive system control
-"""
-icon = "resources/icon"
-sources = [
-    "src/pqsframework",
-]
-test_sources = [
-]
-
+[tool.briefcase.app.pqs_framework]
+formal_name = "PQS Framework"
+description = "Quantum-ML Power Management System"
+icon = "pqs_icon"
+sources = ["pqs_framework"]
 requires = [
-    "rumps>=0.3.0",
+    "flask>=3.0.0",
     "psutil>=5.9.0",
-    "flask>=2.3.0",
-    "numpy>=1.24.0",
-    "werkzeug>=2.3.0",
-    "jinja2>=3.1.0",
-    "markupsafe>=2.1.0",
-    "itsdangerous>=2.1.0",
-    "click>=8.1.0",
-    "packaging>=23.0",
-    "typing-extensions>=4.7.0",
+    "pyobjc-framework-WebKit>=10.0",
+    "pyobjc-framework-Cocoa>=10.0",
+    "pyobjc-core>=10.0",
 ]
 
+[tool.briefcase.app.pqs_framework.macOS]
 universal_build = true
-
-[tool.briefcase.app.pqsframework.macOS.entitlement]
-"com.apple.security.network.client" = true
-"com.apple.security.network.server" = true
-"com.apple.security.files.user-selected.read-write" = true
-
-[tool.briefcase.app.pqsframework.macOS.app_packages]
-# Additional packages for macOS app bundle
+deployment_target = "15.0"
 
 [build-system]
-requires = [
-    "setuptools>=60",
-    "wheel",
-    "briefcase>=0.3.0",
-]
-build-backend = "setuptools.build_meta"
+requires = ["briefcase"]
+
+[project]
+name = "pqs_framework"
+version = "1.0.0"
+description = "Quantum-ML Power Management System"
+authors = [{name = "PQS Framework", email = "info@pqs.framework"}]
+license = {file = "LICENSE"}
+requires-python = ">=3.11"

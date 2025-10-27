@@ -38,18 +38,25 @@ The **PQS Framework** implements revolutionary **Predictive-Quantum Scheduling**
 
 ### **1. Launch PQS Framework**
 ```bash
-# Main entry point - Universal PQS App
+# Main entry point - Universal PQS App with Native Window (default)
 cd /Users/home/Projects/system-tools/m3.macbook.air
 source quantum_ml_311/bin/activate
 python universal_pqs_app.py
+
+# Or use the pqs command if installed
+pqs
+
+# For legacy menu bar mode
+python universal_pqs_app.py --menu-bar
 ```
 
 The app will:
+- Prompt you to select quantum engine (Cirq optimized or Qiskit experimental)
 - Detect your system architecture (Apple Silicon or Intel)
 - Initialize quantum-ML hybrid system
 - Start background optimization loop (30s interval)
-- Launch web dashboard at `http://localhost:5002`
-- Appear in your menu bar with system controls
+- Launch native macOS window with sidebar navigation (default)
+- Embed web dashboard at `http://localhost:5002`
 
 ### **2. Access Web Dashboards**
 - **Production Dashboard**: `http://localhost:5002/` - Main interface

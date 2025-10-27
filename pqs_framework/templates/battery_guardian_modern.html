@@ -1,0 +1,224 @@
+{% extends "base_modern.html" %}
+
+{% block content %}
+<div x-data="batteryGuardian()" x-init="init()" class="space-y-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
+            🛡️ Battery Guardian
+        </h1>
+        <p class="text-gray-400">Dynamic Learning & Proactive Protection</p>
+        <p class="text-sm text-gray-500 mt-2" x-text="'Last updated: ' + lastUpdate"></p>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="bg-gradient-to-br from-green-900 to-green-800 rounded-lg p-6 border border-green-700">
+            <div class="text-sm text-green-200 mb-1">Total Protections</div>
+            <div class="text-3xl font-bold text-white" x-text="stats.total_protections || 0"></div>
+        </div>
+        <div class="bg-gradient-to-br from-blue-900 to-blue-800 rounded-lg p-6 border border-blue-700">
+            <div class="text-sm text-blue-200 mb-1">Total Savings</div>
+            <div class="text-3xl font-bold text-white" x-text="(stats.total_savings || 0).toFixed(1) + '%'"></div>
+        </div>
+        <div class="bg-gradient-to-br from-purple-900 to-purple-800 rounded-lg p-6 border border-purple-700">
+            <div class="text-sm text-purple-200 mb-1">Apps Learned</div>
+            <div class="text-3xl font-bold text-white" x-text="stats.apps_learned || 0"></div>
+        </div>
+        <div class="bg-gradient-to-br from-cyan-900 to-cyan-800 rounded-lg p-6 border border-cyan-700">
+            <div class="text-sm text-cyan-200 mb-1">Current Priorities</div>
+            <div class="text-3xl font-bold text-white" x-text="stats.current_priority_apps || 0"></div>
+        </div>
+    </div>
+    
+    <!-- Top Priority Apps -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-2xl font-bold mb-4">🎯 Top Priority Apps (Dynamic)</h2>
+        <div class="space-y-3">
+            <template x-for="app in topApps" :key="app.name">
+                <div class="bg-gray-700/50 rounded-lg p-4 hover:bg-gray-700 transition">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <div class="font-bold text-lg" x-text="app.name"></div>
+                            <div class="text-sm text-gray-400 mt-1">
+                                <span x-text="'Priority: ' + app.priority"></span> | 
+                                <span x-text="'Confidence: ' + (app.confidence * 100).toFixed(0) + '%'"></span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-green-400" x-text="'Savings: ' + app.savings.toFixed(1) + '%'"></div>
+                            <div class="text-xs text-gray-500" x-text="'Protected: ' + app.protections + ' times'"></div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <div x-show="topApps.length === 0" class="text-center text-gray-400 py-8">
+                No priority apps learned yet
+            </div>
+        </div>
+    </div>
+    
+    <!-- Learned Patterns -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-2xl font-bold mb-4">🔍 Learned Patterns</h2>
+        <div x-show="!stats.running" class="text-center text-gray-400 py-8">
+            Battery Guardian service not running. Start the service to begin learning patterns.
+        </div>
+        <div x-show="stats.running && Object.keys(patterns).length === 0" class="text-center text-gray-400 py-8">
+            <p x-text="patternMessage"></p>
+        </div>
+        <div x-show="stats.running && Object.keys(patterns).length > 0" class="space-y-4">
+            <template x-for="(pattern, appName) in patterns" :key="appName">
+                <div class="bg-gray-700/50 rounded-lg p-4">
+                    <div class="font-bold mb-2" x-text="appName"></div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                        <div>
+                            <div class="text-gray-400">Avg CPU</div>
+                            <div class="text-white" x-text="pattern.avg_cpu.toFixed(1) + '%'"></div>
+                        </div>
+                        <div>
+                            <div class="text-gray-400">Avg Memory</div>
+                            <div class="text-white" x-text="pattern.avg_memory.toFixed(1) + '%'"></div>
+                        </div>
+                        <div>
+                            <div class="text-gray-400">Observations</div>
+                            <div class="text-white" x-text="pattern.observations"></div>
+                        </div>
+                        <div>
+                            <div class="text-gray-400">Confidence</div>
+                            <div class="text-white" x-text="(pattern.confidence * 100).toFixed(0) + '%'"></div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+    
+    <!-- Apps Being Analyzed -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-2xl font-bold mb-4">📊 Apps Being Analyzed</h2>
+        <div class="space-y-2 max-h-96 overflow-y-auto">
+            <template x-for="app in analyzedApps" :key="app.name">
+                <div class="flex items-center justify-between p-3 bg-gray-700/50 rounded hover:bg-gray-700 transition">
+                    <div class="flex-1">
+                        <div class="font-bold" x-text="app.name"></div>
+                        <div class="text-sm text-gray-400">
+                            <span x-text="'CPU: ' + app.cpu.toFixed(1) + '%'"></span> | 
+                            <span x-text="'Memory: ' + app.memory.toFixed(1) + '%'"></span>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-400" x-text="'Observations: ' + app.observations"></div>
+                </div>
+            </template>
+            <div x-show="analyzedApps.length === 0" class="text-center text-gray-400 py-8">
+                No apps being analyzed yet
+            </div>
+        </div>
+    </div>
+    
+    <!-- Control Panel -->
+    <div class="flex justify-center gap-4">
+        <button @click="refreshData()" 
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">
+            🔄 Refresh Data
+        </button>
+    </div>
+</div>
+
+<script>
+function batteryGuardian() {
+    return {
+        stats: {},
+        topApps: [],
+        patterns: {},
+        analyzedApps: [],
+        lastUpdate: 'Never',
+        patternMessage: 'Collecting initial data...',
+        
+        init() {
+            this.loadData();
+            setInterval(() => this.loadData(), 5000);
+        },
+        
+        async loadData() {
+            try {
+                const response = await fetch('/api/battery/guardian/stats');
+                const data = await response.json();
+                
+                if (!data.available) {
+                    this.stats = { running: false };
+                    return;
+                }
+                
+                this.stats = data.stats || {};
+                this.topApps = this.stats.top_priority_apps || [];
+                this.patterns = this.stats.learned_patterns || {};
+                
+                // Build analyzed apps list - show all apps being analyzed
+                this.analyzedApps = [];
+                
+                // Get apps from learned_patterns (these are the apps being analyzed)
+                if (this.patterns && Object.keys(this.patterns).length > 0) {
+                    for (const [name, pattern] of Object.entries(this.patterns)) {
+                        // Ensure we have valid numbers
+                        const avgCpu = parseFloat(pattern.avg_cpu) || parseFloat(pattern.average_cpu) || 0;
+                        const avgMem = parseFloat(pattern.avg_memory) || parseFloat(pattern.average_memory) || 0;
+                        const obs = parseInt(pattern.observations) || parseInt(pattern.observation_count) || 0;
+                        
+                        this.analyzedApps.push({
+                            name: name,
+                            cpu: avgCpu,
+                            memory: avgMem,
+                            observations: obs
+                        });
+                    }
+                }
+                // Also add from apps_protected if available
+                else if (this.stats.apps_protected) {
+                    if (Array.isArray(this.stats.apps_protected)) {
+                        // If it's an array
+                        this.stats.apps_protected.forEach(app => {
+                            this.analyzedApps.push({
+                                name: app.name || app,
+                                cpu: app.avg_cpu || 0,
+                                memory: app.avg_memory || 0,
+                                observations: app.observations || 0
+                            });
+                        });
+                    } else if (typeof this.stats.apps_protected === 'object') {
+                        // If it's an object
+                        for (const [name, info] of Object.entries(this.stats.apps_protected)) {
+                            this.analyzedApps.push({
+                                name: name,
+                                cpu: info.avg_cpu || 0,
+                                memory: info.avg_memory || 0,
+                                observations: info.observations || 0
+                            });
+                        }
+                    }
+                }
+                
+                // Update pattern message
+                const totalAnalyzed = this.stats.total_apps_analyzed || 0;
+                if (totalAnalyzed > 0 && Object.keys(this.patterns).length === 0) {
+                    this.patternMessage = `Analyzing ${totalAnalyzed} apps. Patterns will appear after sufficient data collection (40%+ confidence).`;
+                } else if (!this.stats.running) {
+                    this.patternMessage = 'Battery Guardian service not running.';
+                } else {
+                    this.patternMessage = 'Collecting initial data. Patterns will appear after monitoring app usage.';
+                }
+                
+                this.lastUpdate = new Date().toLocaleTimeString();
+                
+            } catch (error) {
+                console.error('Load error:', error);
+            }
+        },
+        
+        refreshData() {
+            this.loadData();
+        }
+    }
+}
+</script>
+{% endblock %}

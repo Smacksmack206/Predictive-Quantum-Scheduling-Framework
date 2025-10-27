@@ -1,0 +1,393 @@
+{% extends "base_modern.html" %}
+
+{% block content %}
+<div x-data="unifiedDashboard()" x-init="init()" class="space-y-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            🔬 PQS Unified Dashboard
+        </h1>
+        <p class="text-gray-400">Complete quantum-ML power management system</p>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-gradient-to-br from-blue-900 to-blue-800 rounded-lg p-4 border border-blue-700">
+            <div class="text-sm text-blue-200 mb-1">Qubits Active</div>
+            <div class="text-3xl font-bold text-white" x-text="qubitsUsed + '/' + maxQubits"></div>
+        </div>
+        <div class="bg-gradient-to-br from-purple-900 to-purple-800 rounded-lg p-4 border border-purple-700">
+            <div class="text-sm text-purple-200 mb-1">Quantum Advantage</div>
+            <div class="text-3xl font-bold text-white" x-text="quantumAdvantage + 'x'"></div>
+        </div>
+        <div class="bg-gradient-to-br from-green-900 to-green-800 rounded-lg p-4 border border-green-700">
+            <div class="text-sm text-green-200 mb-1">Battery Level</div>
+            <div class="text-3xl font-bold text-white" x-text="batteryLevel + '%'"></div>
+        </div>
+        <div class="bg-gradient-to-br from-cyan-900 to-cyan-800 rounded-lg p-4 border border-cyan-700">
+            <div class="text-sm text-cyan-200 mb-1">Energy Saved</div>
+            <div class="text-3xl font-bold text-white" x-text="energySaved + '%'"></div>
+        </div>
+    </div>
+    
+    <!-- System Resources -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-gray-400">CPU Usage</span>
+                <span class="text-2xl">🖥️</span>
+            </div>
+            <div class="text-4xl font-bold mb-2" x-text="cpuUsage + '%'"></div>
+            <div class="bg-gray-900 rounded-full h-2">
+                <div class="bg-blue-500 h-2 rounded-full transition-all" :style="`width: ${cpuUsage}%`"></div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-gray-400">Memory Usage</span>
+                <span class="text-2xl">💾</span>
+            </div>
+            <div class="text-4xl font-bold mb-2" x-text="memoryUsage + '%'"></div>
+            <div class="bg-gray-900 rounded-full h-2">
+                <div class="bg-purple-500 h-2 rounded-full transition-all" :style="`width: ${memoryUsage}%`"></div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-gray-400">Active Processes</span>
+                <span class="text-2xl">⚙️</span>
+            </div>
+            <div class="text-4xl font-bold mb-2" x-text="processCount"></div>
+            <div class="text-sm text-gray-400">Running processes</div>
+        </div>
+    </div>
+    
+    <!-- Quantum Circuit Visualization -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <h2 class="text-2xl font-bold mb-4">🔬 Quantum Circuit Visualization</h2>
+        <div class="bg-gray-900/50 rounded-lg p-6 min-h-[200px] flex items-center justify-center">
+            <svg width="100%" height="200" viewBox="0 0 700 200">
+                <!-- Q0 -->
+                <circle cx="50" cy="100" r="15" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+                <text x="50" y="105" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Q0</text>
+                <line x1="65" y1="100" x2="115" y2="100" stroke="#60a5fa" stroke-width="2" opacity="0.7"/>
+                <path d="M 50 70 Q 90 40 130 70" stroke="#ec4899" stroke-width="2" fill="none" opacity="0.8" stroke-dasharray="5,5"/>
+                
+                <!-- Q1 -->
+                <circle cx="130" cy="100" r="15" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+                <text x="130" y="105" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Q1</text>
+                <line x1="145" y1="100" x2="195" y2="100" stroke="#60a5fa" stroke-width="2" opacity="0.7"/>
+                
+                <!-- Q2 -->
+                <circle cx="210" cy="100" r="15" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+                <text x="210" y="105" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Q2</text>
+                <line x1="225" y1="100" x2="275" y2="100" stroke="#60a5fa" stroke-width="2" opacity="0.7"/>
+                <path d="M 210 70 Q 250 40 290 70" stroke="#ec4899" stroke-width="2" fill="none" opacity="0.8" stroke-dasharray="5,5"/>
+                
+                <!-- Q3 -->
+                <circle cx="290" cy="100" r="15" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+                <text x="290" y="105" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Q3</text>
+                <line x1="305" y1="100" x2="355" y2="100" stroke="#60a5fa" stroke-width="2" opacity="0.7"/>
+                
+                <!-- Q4 -->
+                <circle cx="370" cy="100" r="15" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+                <text x="370" y="105" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Q4</text>
+                <line x1="385" y1="100" x2="435" y2="100" stroke="#60a5fa" stroke-width="2" opacity="0.7"/>
+                <path d="M 370 70 Q 410 40 450 70" stroke="#ec4899" stroke-width="2" fill="none" opacity="0.8" stroke-dasharray="5,5"/>
+                
+                <!-- Q5 -->
+                <circle cx="450" cy="100" r="15" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+                <text x="450" y="105" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Q5</text>
+                <line x1="465" y1="100" x2="515" y2="100" stroke="#60a5fa" stroke-width="2" opacity="0.7"/>
+                
+                <!-- Q6 -->
+                <circle cx="530" cy="100" r="15" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+                <text x="530" y="105" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Q6</text>
+                <line x1="545" y1="100" x2="595" y2="100" stroke="#60a5fa" stroke-width="2" opacity="0.7"/>
+                <path d="M 530 70 Q 570 40 610 70" stroke="#ec4899" stroke-width="2" fill="none" opacity="0.8" stroke-dasharray="5,5"/>
+                
+                <!-- Q7 -->
+                <circle cx="610" cy="100" r="15" fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+                <text x="610" y="105" text-anchor="middle" fill="white" font-size="12" font-weight="bold">Q7</text>
+            </svg>
+        </div>
+    </div>
+    
+    <!-- Process Monitor & Killer -->
+    <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold">⚙️ Process Monitor</h2>
+            <button @click="refreshProcesses()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                🔄 Refresh
+            </button>
+        </div>
+        <div class="space-y-2 max-h-96 overflow-y-auto">
+            <template x-for="process in topProcesses" :key="process.pid">
+                <div class="flex items-center justify-between p-3 bg-gray-700/50 rounded hover:bg-gray-700 transition">
+                    <div class="flex-1">
+                        <div class="font-bold" x-text="process.name"></div>
+                        <div class="text-sm text-gray-400">
+                            <span x-text="'PID: ' + process.pid"></span> | 
+                            <span x-text="'CPU: ' + process.cpu + '%'"></span> | 
+                            <span x-text="'Memory: ' + process.memory + '%'"></span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button @click="suspendProcess(process.pid, process.name)" 
+                                class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded transition text-sm">
+                            Suspend
+                        </button>
+                        <button @click="killProcess(process.pid, process.name)" 
+                                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition text-sm">
+                            Kill
+                        </button>
+                    </div>
+                </div>
+            </template>
+            <div x-show="topProcesses.length === 0" class="text-center text-gray-400 py-8">
+                No processes loaded. Click Refresh.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Battery & Power Management -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h3 class="text-xl font-bold mb-4">🔋 Battery Status</h3>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center p-3 bg-gray-700/50 rounded">
+                    <span class="text-gray-400">Battery Level</span>
+                    <span class="font-bold text-green-400" x-text="batteryLevel + '%'"></span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-gray-700/50 rounded">
+                    <span class="text-gray-400">Time Remaining</span>
+                    <span class="font-bold text-blue-400" x-text="timeRemaining"></span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-gray-700/50 rounded">
+                    <span class="text-gray-400">Charging</span>
+                    <span class="font-bold" :class="charging ? 'text-green-400' : 'text-gray-400'" x-text="charging ? 'Yes ⚡' : 'No'"></span>
+                </div>
+                <div class="flex justify-between items-center p-3 bg-gray-700/50 rounded">
+                    <span class="text-gray-400">Health</span>
+                    <span class="font-bold text-green-400" x-text="batteryHealth + '%'"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h3 class="text-xl font-bold mb-4">⚡ Power Modes</h3>
+            <div class="space-y-3">
+                <button @click="toggleAggressiveMode()" 
+                        :class="aggressiveMode ? 'bg-green-600' : 'bg-gray-600'"
+                        class="w-full py-3 rounded-lg font-bold transition">
+                    <span x-text="aggressiveMode ? '✅ Aggressive Mode ON' : '⏸️ Aggressive Mode OFF'"></span>
+                </button>
+                <button @click="toggleQuantumMode()" 
+                        :class="quantumMode ? 'bg-purple-600' : 'bg-gray-600'"
+                        class="w-full py-3 rounded-lg font-bold transition">
+                    <span x-text="quantumMode ? '✅ Quantum Max ON' : '⏸️ Quantum Max OFF'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Control Panel -->
+    <div class="flex justify-center gap-4 flex-wrap">
+        <button @click="runOptimization()" :disabled="optimizing"
+                class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg transition">
+            <span x-show="!optimizing">🚀 Run Optimization</span>
+            <span x-show="optimizing">⏳ Optimizing...</span>
+        </button>
+        <button @click="refreshData()"
+                class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition">
+            🔄 Refresh Data
+        </button>
+        <button @click="calibrateQuantum()"
+                class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition">
+            🎯 Calibrate Quantum
+        </button>
+    </div>
+</div>
+
+<script>
+function unifiedDashboard() {
+    return {
+        // Quantum
+        qubitsUsed: 0,
+        maxQubits: 48,
+        quantumAdvantage: 0,
+        energySaved: 0,
+        
+        // System
+        cpuUsage: 0,
+        memoryUsage: 0,
+        processCount: 0,
+        
+        // Battery
+        batteryLevel: 0,
+        timeRemaining: 'Calculating...',
+        charging: false,
+        batteryHealth: 0,
+        aggressiveMode: true,
+        quantumMode: true,
+        
+        // State
+        optimizing: false,
+        topProcesses: [],
+        
+        init() {
+            this.fetchData();
+            this.refreshProcesses();
+            setInterval(() => this.fetchData(), 3000);
+        },
+        
+        async fetchData() {
+            try {
+                // Fetch quantum status
+                const quantumResponse = await fetch('/api/quantum/status');
+                const quantumData = await quantumResponse.json();
+                
+                const quantum = quantumData.quantum_system || {};
+                const energy = quantumData.energy_optimization || {};
+                
+                this.qubitsUsed = quantum.active_circuits || 0;
+                this.maxQubits = quantum.qubits_available || 48;
+                this.quantumAdvantage = (quantum.quantum_operations_rate / 1000 || 0).toFixed(1);
+                this.energySaved = (energy.energy_saved_percent || 0).toFixed(1);
+                
+                // Fetch system stats
+                const statsResponse = await fetch('/api/system-stats');
+                const statsData = await statsResponse.json();
+                
+                this.cpuUsage = (statsData.cpu_percent || 0).toFixed(1);
+                this.memoryUsage = (statsData.memory_percent || 0).toFixed(1);
+                this.processCount = statsData.process_count || 0;
+                
+                // Fetch battery status
+                const batteryResponse = await fetch('/api/battery/status');
+                const batteryData = await batteryResponse.json();
+                
+                this.batteryLevel = batteryData.battery_level || 0;
+                this.timeRemaining = batteryData.time_remaining || 'N/A';
+                this.charging = batteryData.power_plugged || false;
+                this.batteryHealth = batteryData.battery_health || 0;
+                
+            } catch (error) {
+                console.error('Fetch error:', error);
+            }
+        },
+        
+        async runOptimization() {
+            this.optimizing = true;
+            try {
+                const response = await fetch('/api/quantum/optimize', { method: 'POST' });
+                const data = await response.json();
+                alert(`✅ Optimization complete!`);
+                await this.fetchData();
+            } catch (error) {
+                alert('❌ Optimization failed');
+            } finally {
+                this.optimizing = false;
+            }
+        },
+        
+        refreshData() {
+            this.fetchData();
+            alert('🔄 Data refreshed!');
+        },
+        
+        async calibrateQuantum() {
+            try {
+                await fetch('/api/quantum/calibrate', { method: 'POST' });
+                alert('🎯 Quantum engine calibrated!');
+            } catch (error) {
+                alert('❌ Calibration failed');
+            }
+        },
+        
+        async toggleAggressiveMode() {
+            this.aggressiveMode = !this.aggressiveMode;
+            try {
+                await fetch('/api/battery/aggressive-mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: this.aggressiveMode })
+                });
+            } catch (error) {
+                console.error('Toggle error:', error);
+            }
+        },
+        
+        async toggleQuantumMode() {
+            this.quantumMode = !this.quantumMode;
+            try {
+                await fetch('/api/quantum/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: this.quantumMode })
+                });
+            } catch (error) {
+                console.error('Toggle error:', error);
+            }
+        },
+        
+        async refreshProcesses() {
+            try {
+                const response = await fetch('/api/processes/top');
+                const data = await response.json();
+                this.topProcesses = data.processes || [];
+            } catch (error) {
+                console.error('Process fetch error:', error);
+                this.topProcesses = [];
+            }
+        },
+        
+        async suspendProcess(pid, name) {
+            if (!confirm(`Suspend process "${name}" (PID: ${pid})?`)) return;
+            
+            try {
+                const response = await fetch('/api/processes/suspend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pid: pid })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ Process ${name} suspended`);
+                    this.refreshProcesses();
+                } else {
+                    alert(`❌ Failed to suspend process: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        },
+        
+        async killProcess(pid, name) {
+            if (!confirm(`Kill process "${name}" (PID: ${pid})?`)) return;
+            
+            try {
+                const response = await fetch('/api/processes/kill', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pid: pid })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ Process ${name} killed`);
+                    this.refreshProcesses();
+                } else {
+                    alert(`❌ Failed to kill process: ${data.error}`);
+                }
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

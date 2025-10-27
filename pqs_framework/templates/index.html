@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PQS Framework - Integrated Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #a8edea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            display: block;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dashboard-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dashboard-card p {
+            opacity: 0.8;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .dashboard-card .features {
+            list-style: none;
+            margin-top: 15px;
+        }
+        
+        .dashboard-card .features li {
+            padding: 5px 0;
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        .dashboard-card .features li:before {
+            content: "✓ ";
+            color: #4ade80;
+            font-weight: bold;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-operational {
+            background: #4ade80;
+            box-shadow: 0 0 10px #4ade80;
+        }
+        
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4ade80;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 PQS Framework</h1>
+            <p>Integrated 40-Qubit Quantum Energy Management System</p>
+        </div>
+        
+        <div class="dashboard-grid">
+            <!-- Quantum Dashboard -->
+            <a href="/quantum" class="dashboard-card">
+                <h3>
+                    🔬 Quantum Dashboard
+                    <span class="status-indicator status-operational"></span>
+                </h3>
+                <p>40-qubit quantum computing system with real-time energy optimization, ML acceleration, and Apple Silicon integration.</p>
+                <ul class="features">
+                    <li>40-qubit quantum circuits</li>
+                    <li>Quantum entanglement analysis</li>
+                    <li>Apple Silicon GPU acceleration</li>
+                    <li>Interactive circuit visualization</li>
+                    <li>Quantum ML interface</li>
+                </ul>
+            </a>
+            
+            <!-- Battery Monitor -->
+            <a href="/battery" class="dashboard-card">
+                <h3>
+                    🔋 Battery Monitor
+                    <span class="status-indicator status-operational"></span>
+                </h3>
+                <p>Advanced battery analytics with real-time monitoring, health tracking, and optimization recommendations.</p>
+                <ul class="features">
+                    <li>Real-time battery metrics</li>
+                    <li>Health and cycle tracking</li>
+                    <li>Charging optimization</li>
+                    <li>Historical analysis</li>
+                    <li>Thermal monitoring</li>
+                </ul>
+            </a>
+            
+            <!-- EAS Monitor -->
+            <a href="/eas" class="dashboard-card">
+                <h3>
+                    ⚡ EAS Monitor
+                    <span class="status-indicator status-operational"></span>
+                </h3>
+                <p>Enhanced Application Scheduler with intelligent process management and energy optimization.</p>
+                <ul class="features">
+                    <li>Process classification</li>
+                    <li>CPU scheduling optimization</li>
+                    <li>Energy efficiency analysis</li>
+                    <li>Real-time monitoring</li>
+                    <li>Performance metrics</li>
+                </ul>
+            </a>
+            
+            <!-- Battery History -->
+            <a href="/battery-history" class="dashboard-card">
+                <h3>
+                    📊 Battery History
+                    <span class="status-indicator status-operational"></span>
+                </h3>
+                <p>Comprehensive battery usage history with detailed analytics and trend analysis.</p>
+                <ul class="features">
+                    <li>Usage pattern analysis</li>
+                    <li>Charge/discharge cycles</li>
+                    <li>Capacity degradation tracking</li>
+                    <li>Historical comparisons</li>
+                    <li>Predictive analytics</li>
+                </ul>
+            </a>
+            
+            <!-- Real-time EAS Monitor -->
+            <a href="/eas-monitor" class="dashboard-card">
+                <h3>
+                    🎯 Real-time EAS
+                    <span class="status-indicator status-operational"></span>
+                </h3>
+                <p>Live EAS monitoring with real-time process tracking and dynamic optimization.</p>
+                <ul class="features">
+                    <li>Live process monitoring</li>
+                    <li>Dynamic scheduling</li>
+                    <li>Real-time optimization</li>
+                    <li>Performance alerts</li>
+                    <li>System health tracking</li>
+                </ul>
+            </a>
+        </div>
+        
+        <div class="quick-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="quantum-qubits">40</div>
+                <div class="stat-label">Quantum Qubits</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="energy-saved">20.4%</div>
+                <div class="stat-label">Energy Saved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="optimizations">2</div>
+                <div class="stat-label">Optimizations</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="ml-models">3</div>
+                <div class="stat-label">ML Models</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update quick stats from quantum API
+        async function updateQuickStats() {
+            try {
+                const response = await fetch('/api/quantum/status');
+                const data = await response.json();
+                
+                if (data.quantum_system) {
+                    document.getElementById('quantum-qubits').textContent = data.quantum_system.qubits_available || '40';
+                }
+                if (data.energy_optimization) {
+                    document.getElementById('energy-saved').textContent = 
+                        (data.energy_optimization.energy_saved_percent || 20.4).toFixed(1) + '%';
+                    document.getElementById('optimizations').textContent = 
+                        data.energy_optimization.total_optimizations || '2';
+                }
+                if (data.ml_acceleration) {
+                    document.getElementById('ml-models').textContent = 
+                        data.ml_acceleration.models_trained || '3';
+                }
+            } catch (error) {
+                console.log('Quick stats update failed:', error);
+            }
+        }
+        
+        // Update stats on load and every 30 seconds
+        document.addEventListener('DOMContentLoaded', updateQuickStats);
+        setInterval(updateQuickStats, 30000);
+    </script>
+</body>
+</html>

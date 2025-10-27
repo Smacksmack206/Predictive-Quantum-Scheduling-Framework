@@ -25,6 +25,7 @@ import multiprocessing as mp
 QISKIT_AVAILABLE = False
 SparsePauliOp = None
 Estimator = None
+Sampler = None
 NumPyMinimumEigensolver = None
 
 try:
@@ -49,21 +50,22 @@ try:
             QAOA = None
             NumPyMinimumEigensolver = None
     
-    # Try to import Estimator from different locations (Qiskit 2.x uses StatevectorEstimator)
+    # Try to import Estimator and Sampler from different locations (Qiskit 2.x uses StatevectorEstimator/Sampler)
     try:
-        from qiskit.primitives import StatevectorEstimator as Estimator
-        print("✅ Using StatevectorEstimator (Qiskit 2.x)")
+        from qiskit.primitives import StatevectorEstimator as Estimator, StatevectorSampler as Sampler
+        print("✅ Using StatevectorEstimator and StatevectorSampler (Qiskit 2.x)")
     except ImportError:
         try:
-            from qiskit.primitives import Estimator
-            print("✅ Using Estimator (Qiskit 1.x)")
+            from qiskit.primitives import Estimator, Sampler
+            print("✅ Using Estimator and Sampler (Qiskit 1.x)")
         except ImportError:
             try:
-                from qiskit_aer.primitives import Estimator
-                print("✅ Using Aer Estimator")
+                from qiskit_aer.primitives import Estimator, Sampler
+                print("✅ Using Aer Estimator and Sampler")
             except ImportError:
                 Estimator = None
-                print("⚠️ No Estimator available, will use classical fallback")
+                Sampler = None
+                print("⚠️ No Estimator/Sampler available, will use classical fallback")
     
     QISKIT_AVAILABLE = True
     print("✅ Qiskit loaded successfully")
@@ -473,8 +475,10 @@ class QuantumMaxScheduler:
             hamiltonian = self._create_scheduling_hamiltonian(qubits, metrics.process_count)
             
             # Use QAOA for combinatorial optimization if available
-            if QAOA is not None and 'ADAM' in self.optimizers:
+            if QAOA is not None and Sampler is not None and 'ADAM' in self.optimizers:
+                sampler = Sampler()
                 qaoa = QAOA(
+                    sampler=sampler,
                     optimizer=self.optimizers.get('ADAM', self.optimizers['SPSA']),
                     reps=3,
                     initial_point=None
@@ -623,8 +627,10 @@ class QuantumMaxScheduler:
             hamiltonian = self._create_memory_hamiltonian(qubits, metrics.memory_percent)
             
             # Use QAOA for memory allocation
-            if QAOA is not None:
+            if QAOA is not None and Sampler is not None:
+                sampler = Sampler()
                 qaoa = QAOA(
+                    sampler=sampler,
                     optimizer=self.optimizers['SLSQP'],
                     reps=2
                 )

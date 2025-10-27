@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PQS Framework - Comprehensive System Control</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .controller-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .controller-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .controller-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #4ecdc4;
+        }
+        
+        .control-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .control-value {
+            font-weight: 600;
+            color: #45b7d1;
+        }
+        
+        .control-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .control-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-active { background-color: #4ecdc4; }
+        .status-inactive { background-color: #ff6b6b; }
+        .status-warning { background-color: #feca57; }
+        
+        .optimization-panel {
+            grid-column: 1 / -1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .optimization-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .optimization-btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .optimization-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+        }
+        
+        .optimization-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .chart-container {
+            height: 200px;
+            margin: 15px 0;
+        }
+        
+        .real-time-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(78, 205, 196, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+            z-index: 1000;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; box-shadow: 0 0 20px rgba(78, 205, 196, 0.5); }
+        }
+        
+        .navigation {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: var(--card-background);
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 1.3rem;
+        }
+
+        .close {
+            color: var(--text-secondary);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close:hover {
+            color: var(--danger-color);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .parameter-group {
+            margin-bottom: 25px;
+        }
+
+        .parameter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .parameter-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border-color);
+            outline: none;
+            margin-bottom: 8px;
+            -webkit-appearance: none;
+        }
+
+        .parameter-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .parameter-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .parameter-group span {
+            display: inline-block;
+            min-width: 50px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .parameter-group input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .modal-footer .optimization-btn {
+            margin: 0;
+        }
+
+        /* Notification styles */
+        .notification {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Scheduler Control Styles */
+        .control-select {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+
+        .control-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+        }
+
+        .control-slider {
+            width: 120px;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--border-color);
+            outline: none;
+            margin: 0 10px;
+            -webkit-appearance: none;
+        }
+
+        .control-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .control-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .scheduler-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .scheduler-actions .optimization-btn {
+            flex: 1;
+            min-width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="real-time-indicator">
+        🎛️ SYSTEM CONTROL ACTIVE
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🎛️ Comprehensive System Control</h1>
+            <p>Advanced Control of ALL Tunable System Parameters</p>
+            
+            <div class="navigation">
+                <a href="/" class="nav-link">🏠 Main Dashboard</a>
+                <a href="/quantum" class="nav-link">⚛️ Quantum Dashboard</a>
+            </div>
+        </div>
+        
+        <!-- Optimization Control Panel -->
+        <div class="control-grid">
+            <div class="controller-card optimization-panel">
+                <h2>🚀 System Optimization Control</h2>
+                <p>Run comprehensive optimization across all system parameters</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-optimizations">0</div>
+                        <div class="stat-label">Total Optimizations</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="success-rate">0%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-impact">0.0%</div>
+                        <div class="stat-label">Total Impact</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="optimization-level">Balanced</div>
+                        <div class="stat-label">Optimization Level</div>
+                    </div>
+                </div>
+                
+                <div class="optimization-controls">
+                    <button class="optimization-btn" onclick="runComprehensiveOptimization()">
+                        🎯 Run Comprehensive Optimization
+                    </button>
+                    <button class="optimization-btn" onclick="refreshControllers()">
+                        🔄 Refresh Controllers
+                    </button>
+                    <button class="optimization-btn" onclick="showParameterControls()">
+                        ⚙️ System Parameters
+                    </button>
+                    <button class="optimization-btn" onclick="exportSystemReport()">
+                        📊 Export System Report
+                    </button>
+                </div>
+                
+                <!-- Parameter Controls Modal -->
+                <div id="parameter-modal" class="modal" style="display: none;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>⚙️ System Parameter Controls</h3>
+                            <span class="close" onclick="closeParameterControls()">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="parameter-group">
+                                <label>Optimization Interval (seconds):</label>
+                                <input type="range" id="optimization-interval" min="10" max="300" value="30">
+                                <span id="interval-value">30s</span>
+                            </div>
+                            <div class="parameter-group">
+                                <label>CPU Optimization Threshold (%):</label>
+                                <input type="range" id="cpu-threshold" min="50" max="95" value="70">
+                                <span id="cpu-threshold-value">70%</span>
+                            </div>
+                            <div class="parameter-group">
+                                <label>Memory Optimization Threshold (%):</label>
+                                <input type="range" id="memory-threshold" min="60" max="95" value="80">
+                                <span id="memory-threshold-value">80%</span>
+                            </div>
+                            <div class="parameter-group">
+                                <label>Maximum Quantum Circuits:</label>
+                                <input type="range" id="quantum-circuits" min="1" max="16" value="8">
+                                <span id="quantum-circuits-value">8</span>
+                            </div>
+                            <div class="parameter-group">
+                                <label>
+                                    <input type="checkbox" id="ml-training" checked>
+                                    Enable ML Training
+                                </label>
+                            </div>
+                            <div class="parameter-group">
+                                <label>
+                                    <input type="checkbox" id="gpu-acceleration" checked>
+                                    GPU Acceleration (Apple Silicon)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="optimization-btn" onclick="saveParameters()">💾 Save Parameters</button>
+                            <button class="optimization-btn" onclick="resetParameters()">🔄 Reset to Defaults</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Scheduler Control Section -->
+                <div class="controller-card">
+                    <div class="controller-title">
+                        ⚙️ Quantum Scheduler Control
+                    </div>
+                    <div class="control-item">
+                        <span>Scheduler Mode</span>
+                        <select id="scheduler-mode" class="control-select">
+                            <option value="adaptive">Adaptive (Recommended)</option>
+                            <option value="performance">Performance</option>
+                            <option value="balanced">Balanced</option>
+                            <option value="power_save">Power Save</option>
+                            <option value="quantum_max">Quantum Maximum</option>
+                        </select>
+                    </div>
+                    <div class="control-item">
+                        <span>Quantum Priority</span>
+                        <input type="range" id="quantum-priority" min="1" max="10" value="7" class="control-slider">
+                        <span id="quantum-priority-value" class="control-value">7</span>
+                    </div>
+                    <div class="control-item">
+                        <span>ML Learning Rate</span>
+                        <input type="range" id="ml-learning-rate" min="1" max="100" value="50" class="control-slider">
+                        <span id="ml-learning-rate-value" class="control-value">0.05</span>
+                    </div>
+                    <div class="control-item">
+                        <span>Process Affinity</span>
+                        <span class="status-indicator status-active"></span>
+                        <span class="control-value">Auto-Optimized</span>
+                    </div>
+                    <div class="scheduler-actions">
+                        <button class="optimization-btn" onclick="applySchedulerSettings()">
+                            🎯 Apply Scheduler Settings
+                        </button>
+                        <button class="optimization-btn" onclick="resetScheduler()">
+                            🔄 Reset to Defaults
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Controllers Grid -->
+        <div class="control-grid">
+            <!-- CPU Controller -->
+            <div class="controller-card">
+                <div class="controller-title">
+                    🔧 CPU Frequency Controller
+                </div>
+                <div class="control-item">
+                    <span>Current Governor</span>
+                    <span class="control-value" id="cpu-governor">Loading...</span>
+                </div>
+                <div class="control-item">
+                    <span>Frequency Range</span>
+                    <span class="control-value" id="cpu-frequency-range">Loading...</span>
+                </div>
+                <div class="control-item">
+                    <span>P-State Control</span>
+                    <span class="status-indicator status-active"></span>
+                    <span class="control-value">Active</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="cpuChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Scheduler Controller -->
+            <div class="controller-card">
+                <div class="controller-title">
+                    📋 Scheduler Controller
+                </div>
+                <div class="control-item">
+                    <span>Process Priorities</span>
+                    <span class="control-value" id="process-priorities">0</span>
+                </div>
+                <div class="control-item">
+                    <span>CPU Affinity Control</span>
+                    <span class="status-indicator status-active"></span>
+                    <span class="control-value">Active</span>
+                </div>
+                <div class="control-item">
+                    <span>Scheduler Policies</span>
+                    <span class="control-value" id="scheduler-policies">Loading...</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="schedulerChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Memory Controller -->
+            <div class="controller-card">
+                <div class="controller-title">
+                    💾 Memory Controller
+                </div>
+                <div class="control-item">
+                    <span>Memory Usage</span>
+                    <span class="control-value" id="memory-usage">0%</span>
+                </div>
+                <div class="control-item">
+                    <span>Swap Enabled</span>
+                    <span class="control-value" id="swap-enabled">Unknown</span>
+                </div>
+                <div class="control-item">
+                    <span>Compression</span>
+                    <span class="status-indicator status-active"></span>
+                    <span class="control-value">Optimized</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="memoryChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Thermal Controller -->
+            <div class="controller-card">
+                <div class="controller-title">
+                    🌡️ Thermal Controller
+                </div>
+                <div class="control-item">
+                    <span>CPU Temperature</span>
+                    <span class="control-value" id="cpu-temperature">0°C</span>
+                </div>
+                <div class="control-item">
+                    <span>Thermal Sensors</span>
+                    <span class="control-value" id="thermal-sensors">0</span>
+                </div>
+                <div class="control-item">
+                    <span>Fan Control</span>
+                    <span class="control-value" id="fan-control">Unknown</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="thermalChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- GPU Scheduler -->
+            <div class="controller-card">
+                <div class="controller-title">
+                    🎮 GPU Scheduler
+                </div>
+                <div class="control-item">
+                    <span>GPU Type</span>
+                    <span class="control-value" id="gpu-type">Unknown</span>
+                </div>
+                <div class="control-item">
+                    <span>Metal Support</span>
+                    <span class="control-value" id="metal-support">Unknown</span>
+                </div>
+                <div class="control-item">
+                    <span>Workload Distribution</span>
+                    <span class="status-indicator status-active"></span>
+                    <span class="control-value">Optimized</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="gpuChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- I/O Scheduler -->
+            <div class="controller-card">
+                <div class="controller-title">
+                    💿 I/O Scheduler
+                </div>
+                <div class="control-item">
+                    <span>Current Scheduler</span>
+                    <span class="control-value" id="io-scheduler">Loading...</span>
+                </div>
+                <div class="control-item">
+                    <span>Network Interfaces</span>
+                    <span class="control-value" id="network-interfaces">0</span>
+                </div>
+                <div class="control-item">
+                    <span>Disk Optimization</span>
+                    <span class="status-indicator status-active"></span>
+                    <span class="control-value">Active</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="ioChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Power Controller -->
+            <div class="controller-card">
+                <div class="controller-title">
+                    🔋 Power Controller
+                </div>
+                <div class="control-item">
+                    <span>Power Profile</span>
+                    <span class="control-value" id="power-profile">Loading...</span>
+                </div>
+                <div class="control-item">
+                    <span>Sleep Settings</span>
+                    <span class="control-value" id="sleep-settings">Optimized</span>
+                </div>
+                <div class="control-item">
+                    <span>Power Domains</span>
+                    <span class="status-indicator status-active"></span>
+                    <span class="control-value">Managed</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="powerChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let charts = {};
+        let updateInterval;
+        
+        // Initialize charts
+        function initializeCharts() {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false },
+                    y: { display: false, beginAtZero: true }
+                },
+                elements: {
+                    line: { tension: 0.4 },
+                    point: { radius: 0 }
+                },
+                animation: { duration: 0 }
+            };
+            
+            const chartIds = ['cpuChart', 'schedulerChart', 'memoryChart', 'thermalChart', 'gpuChart', 'ioChart', 'powerChart'];
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd'];
+            
+            chartIds.forEach((id, index) => {
+                charts[id] = new Chart(document.getElementById(id), {
+                    type: 'line',
+                    data: {
+                        labels: Array(20).fill(''),
+                        datasets: [{
+                            data: Array(20).fill(0),
+                            borderColor: colors[index],
+                            backgroundColor: colors[index] + '20',
+                            fill: true
+                        }]
+                    },
+                    options: chartOptions
+                });
+            });
+        }
+        
+        // Update chart data
+        function updateChart(chartId, value) {
+            const chart = charts[chartId];
+            if (!chart) return;
+            
+            const data = chart.data.datasets[0].data;
+            data.shift();
+            data.push(value);
+            chart.update('none');
+        }
+        
+        // Fetch comprehensive status
+        async function fetchComprehensiveStatus() {
+            try {
+                const response = await fetch('/api/comprehensive/status');
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('Comprehensive status error:', data.error);
+                    return;
+                }
+                
+                // Update optimization stats
+                document.getElementById('total-optimizations').textContent = data.optimization_history || 0;
+                document.getElementById('optimization-level').textContent = (data.optimization_level || 'balanced').charAt(0).toUpperCase() + (data.optimization_level || 'balanced').slice(1);
+                
+                const successRate = data.optimization_history > 0 ? 
+                    ((data.successful_optimizations || 0) / data.optimization_history * 100).toFixed(1) : 0;
+                document.getElementById('success-rate').textContent = successRate + '%';
+                document.getElementById('total-impact').textContent = (data.total_expected_impact || 0).toFixed(1) + '%';
+                
+                // Update current state
+                const currentState = data.current_state || {};
+                updateChart('cpuChart', currentState.cpu_usage || 0);
+                updateChart('memoryChart', currentState.memory_usage || 0);
+                
+            } catch (error) {
+                console.error('Failed to fetch comprehensive status:', error);
+            }
+        }
+        
+        // Fetch controller details
+        async function fetchControllerDetails() {
+            try {
+                const response = await fetch('/api/comprehensive/controllers');
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('Controller details error:', data.error);
+                    return;
+                }
+                
+                // Update CPU controller
+                const cpu = data.cpu_controller || {};
+                document.getElementById('cpu-governor').textContent = cpu.current_governor || 'Unknown';
+                const freqRange = cpu.frequency_range || [0, 0];
+                document.getElementById('cpu-frequency-range').textContent = `${freqRange[0]}-${freqRange[1]} MHz`;
+                
+                // Update scheduler controller
+                const scheduler = data.scheduler_controller || {};
+                document.getElementById('process-priorities').textContent = scheduler.process_priorities || 0;
+                document.getElementById('scheduler-policies').textContent = (scheduler.scheduler_policies || []).length;
+                
+                // Update memory controller
+                const memory = data.memory_controller || {};
+                const memStats = memory.memory_stats || {};
+                document.getElementById('memory-usage').textContent = (memStats.percent || 0).toFixed(1) + '%';
+                document.getElementById('swap-enabled').textContent = memory.swap_enabled ? 'Yes' : 'No';
+                
+                // Update thermal controller
+                const thermal = data.thermal_controller || {};
+                document.getElementById('thermal-sensors').textContent = (thermal.thermal_sensors || []).length;
+                document.getElementById('fan-control').textContent = thermal.fan_control_available ? 'Available' : 'Not Available';
+                
+                const temperatures = thermal.current_temperatures || {};
+                const cpuTemp = temperatures.cpu || 0;
+                document.getElementById('cpu-temperature').textContent = cpuTemp.toFixed(0) + '°C';
+                updateChart('thermalChart', cpuTemp);
+                
+                // Update GPU scheduler
+                const gpu = data.gpu_scheduler || {};
+                const gpuInfo = gpu.gpu_info || {};
+                document.getElementById('gpu-type').textContent = (gpuInfo.type || 'unknown').replace('_', ' ').toUpperCase();
+                document.getElementById('metal-support').textContent = gpu.metal_available ? 'Available' : 'Not Available';
+                
+                // Update I/O scheduler
+                const io = data.io_scheduler || {};
+                document.getElementById('io-scheduler').textContent = io.current_io_scheduler || 'Unknown';
+                document.getElementById('network-interfaces').textContent = (io.network_interfaces || []).length;
+                
+                // Update power controller
+                const power = data.power_controller || {};
+                document.getElementById('power-profile').textContent = power.current_profile || 'Unknown';
+                
+            } catch (error) {
+                console.error('Failed to fetch controller details:', error);
+            }
+        }
+        
+        // Run comprehensive optimization
+        async function runComprehensiveOptimization() {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = '🔄 Optimizing...';
+            
+            try {
+                const response = await fetch('/api/comprehensive/optimize', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert(`❌ Optimization Failed\\n\\n${data.error}`);
+                } else {
+                    const successful = data.successful_optimizations || 0;
+                    const total = data.total_optimizations || 0;
+                    const impact = data.total_expected_impact || 0;
+                    
+                    alert(`✅ Comprehensive Optimization Complete!\\n\\nOptimizations Applied: ${successful}/${total}\\nExpected Impact: ${impact.toFixed(1)}%\\n\\nAll system parameters have been optimized!`);
+                    
+                    // Refresh data
+                    await fetchComprehensiveStatus();
+                    await fetchControllerDetails();
+                }
+            } catch (error) {
+                alert(`❌ Optimization Error\\n\\n${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.textContent = '🎯 Run Comprehensive Optimization';
+            }
+        }
+        
+        // Refresh controllers
+        async function refreshControllers() {
+            await fetchComprehensiveStatus();
+            await fetchControllerDetails();
+            alert('🔄 Controllers refreshed successfully!');
+        }
+        
+        // Export system report
+        function exportSystemReport() {
+            const report = {
+                timestamp: new Date().toISOString(),
+                system_control_status: 'comprehensive_active',
+                controllers: {
+                    cpu_governor: document.getElementById('cpu-governor').textContent,
+                    memory_usage: document.getElementById('memory-usage').textContent,
+                    thermal_sensors: document.getElementById('thermal-sensors').textContent,
+                    gpu_type: document.getElementById('gpu-type').textContent,
+                    io_scheduler: document.getElementById('io-scheduler').textContent,
+                    power_profile: document.getElementById('power-profile').textContent
+                },
+                optimization_stats: {
+                    total_optimizations: document.getElementById('total-optimizations').textContent,
+                    success_rate: document.getElementById('success-rate').textContent,
+                    total_impact: document.getElementById('total-impact').textContent,
+                    optimization_level: document.getElementById('optimization-level').textContent
+                },
+                system_parameters_controlled: [
+                    'CPU Frequency Scaling',
+                    'Scheduler Instructions',
+                    'Memory Management',
+                    'Thermal Management',
+                    'GPU Scheduling',
+                    'I/O Scheduling',
+                    'Power Management'
+                ]
+            };
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pqs-system-control-report-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('📊 System control report exported successfully!');
+        }
+        
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            
+            // Initial data fetch
+            fetchComprehensiveStatus();
+            fetchControllerDetails();
+            
+            // Set up real-time updates
+            updateInterval = setInterval(() => {
+                fetchComprehensiveStatus();
+                fetchControllerDetails();
+            }, 5000); // Update every 5 seconds
+        });
+
+        // Parameter control functions
+        function showParameterControls() {
+            document.getElementById('parameter-modal').style.display = 'block';
+            loadCurrentParameters();
+        }
+        
+        function closeParameterControls() {
+            document.getElementById('parameter-modal').style.display = 'none';
+        }
+        
+        async function loadCurrentParameters() {
+            try {
+                const response = await fetch('/api/system/parameters');
+                const data = await response.json();
+                
+                if (data.parameters) {
+                    document.getElementById('optimization-interval').value = data.parameters.optimization_interval;
+                    document.getElementById('interval-value').textContent = data.parameters.optimization_interval + 's';
+                    document.getElementById('cpu-threshold').value = data.parameters.cpu_threshold;
+                    document.getElementById('cpu-threshold-value').textContent = data.parameters.cpu_threshold + '%';
+                    document.getElementById('memory-threshold').value = data.parameters.memory_threshold;
+                    document.getElementById('memory-threshold-value').textContent = data.parameters.memory_threshold + '%';
+                    document.getElementById('quantum-circuits').value = data.parameters.quantum_circuits_max;
+                    document.getElementById('quantum-circuits-value').textContent = data.parameters.quantum_circuits_max;
+                    document.getElementById('ml-training').checked = data.parameters.ml_training_enabled;
+                    document.getElementById('gpu-acceleration').checked = data.parameters.gpu_acceleration;
+                }
+            } catch (error) {
+                console.error('Error loading parameters:', error);
+            }
+        }
+        
+        async function saveParameters() {
+            try {
+                const params = {
+                    optimization_interval: parseInt(document.getElementById('optimization-interval').value),
+                    cpu_threshold: parseInt(document.getElementById('cpu-threshold').value),
+                    memory_threshold: parseInt(document.getElementById('memory-threshold').value),
+                    quantum_circuits_max: parseInt(document.getElementById('quantum-circuits').value),
+                    ml_training_enabled: document.getElementById('ml-training').checked,
+                    gpu_acceleration: document.getElementById('gpu-acceleration').checked
+                };
+                
+                const response = await fetch('/api/system/parameters', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(params)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('✅ Parameters updated successfully!', 'success');
+                    closeParameterControls();
+                    // Refresh the data to show updated values
+                    setTimeout(refreshData, 1000);
+                } else {
+                    showNotification('❌ Failed to update parameters', 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Error saving parameters', 'error');
+            }
+        }
+        
+        function resetParameters() {
+            document.getElementById('optimization-interval').value = 30;
+            document.getElementById('interval-value').textContent = '30s';
+            document.getElementById('cpu-threshold').value = 70;
+            document.getElementById('cpu-threshold-value').textContent = '70%';
+            document.getElementById('memory-threshold').value = 80;
+            document.getElementById('memory-threshold-value').textContent = '80%';
+            document.getElementById('quantum-circuits').value = 8;
+            document.getElementById('quantum-circuits-value').textContent = '8';
+            document.getElementById('ml-training').checked = true;
+            document.getElementById('gpu-acceleration').checked = true;
+        }
+        
+        function showNotification(message, type) {
+            // Simple notification system
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                background: ${type === 'success' ? '#34C759' : '#FF3B30'};
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease;
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Update parameter display values when sliders change
+        document.addEventListener('DOMContentLoaded', function() {
+            const intervalSlider = document.getElementById('optimization-interval');
+            const cpuSlider = document.getElementById('cpu-threshold');
+            const memorySlider = document.getElementById('memory-threshold');
+            const quantumSlider = document.getElementById('quantum-circuits');
+            
+            if (intervalSlider) {
+                intervalSlider.addEventListener('input', function() {
+                    document.getElementById('interval-value').textContent = this.value + 's';
+                });
+            }
+            if (cpuSlider) {
+                cpuSlider.addEventListener('input', function() {
+                    document.getElementById('cpu-threshold-value').textContent = this.value + '%';
+                });
+            }
+            if (memorySlider) {
+                memorySlider.addEventListener('input', function() {
+                    document.getElementById('memory-threshold-value').textContent = this.value + '%';
+                });
+            }
+            if (quantumSlider) {
+                quantumSlider.addEventListener('input', function() {
+                    document.getElementById('quantum-circuits-value').textContent = this.value;
+                });
+            }
+            
+            // Scheduler control event listeners
+            const quantumPrioritySlider = document.getElementById('quantum-priority');
+            const mlLearningRateSlider = document.getElementById('ml-learning-rate');
+            
+            if (quantumPrioritySlider) {
+                quantumPrioritySlider.addEventListener('input', function() {
+                    document.getElementById('quantum-priority-value').textContent = this.value;
+                });
+            }
+            
+            if (mlLearningRateSlider) {
+                mlLearningRateSlider.addEventListener('input', function() {
+                    const rate = (this.value / 1000).toFixed(3);
+                    document.getElementById('ml-learning-rate-value').textContent = rate;
+                });
+            }
+        });
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            // Create notification element if it doesn't exist
+            let notification = document.getElementById('notification-toast');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'notification-toast';
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 10000;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    animation: slideIn 0.3s ease-out;
+                    max-width: 400px;
+                `;
+                document.body.appendChild(notification);
+                
+                // Add animation styles
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(400px); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(400px); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            // Set color based on type
+            const colors = {
+                'success': '#10b981',
+                'error': '#ef4444',
+                'warning': '#f59e0b',
+                'info': '#3b82f6'
+            };
+            notification.style.backgroundColor = colors[type] || colors['info'];
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 300);
+            }, 3000);
+        }
+
+        // Scheduler control functions
+        async function applySchedulerSettings() {
+            const button = event.target;
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '⏳ Applying...';
+            
+            try {
+                const settings = {
+                    scheduler_mode: document.getElementById('scheduler-mode').value,
+                    quantum_priority: parseInt(document.getElementById('quantum-priority').value),
+                    ml_learning_rate: parseFloat(document.getElementById('ml-learning-rate').value) / 1000,
+                    process_affinity: 'auto'
+                };
+                
+                console.log('Applying scheduler settings:', settings);
+                
+                const response = await fetch('/api/system/scheduler', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+                
+                const data = await response.json();
+                console.log('Scheduler response:', data);
+                
+                if (response.ok && data.success) {
+                    showNotification('🎯 Scheduler settings applied successfully!', 'success');
+                    // Refresh data to show updated scheduler state
+                    setTimeout(() => {
+                        fetchComprehensiveStatus();
+                        fetchControllerDetails();
+                    }, 1000);
+                } else {
+                    const errorMsg = data.error || 'Failed to apply scheduler settings';
+                    showNotification(`❌ ${errorMsg}`, 'error');
+                    console.error('Scheduler error:', data);
+                }
+            } catch (error) {
+                console.error('Scheduler settings error:', error);
+                showNotification(`❌ Error: ${error.message}`, 'error');
+            } finally {
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+        
+        function resetScheduler() {
+            document.getElementById('scheduler-mode').value = 'adaptive';
+            document.getElementById('quantum-priority').value = 7;
+            document.getElementById('quantum-priority-value').textContent = '7';
+            document.getElementById('ml-learning-rate').value = 50;
+            document.getElementById('ml-learning-rate-value').textContent = '0.050';
+            showNotification('🔄 Scheduler reset to defaults', 'success');
+        }
+    </script>
+</body>
+</html>

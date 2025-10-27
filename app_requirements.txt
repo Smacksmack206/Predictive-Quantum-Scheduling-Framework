@@ -1,0 +1,15 @@
+# PQS Framework Requirements
+cirq>=1.3.0
+qiskit>=1.0.0
+tensorflow-macos>=2.16.0; platform_machine == 'arm64'
+tensorflow-metal>=1.1.0; platform_machine == 'arm64'
+tensorflow>=2.16.0; platform_machine == 'x86_64'
+torch>=2.0.0
+numpy>=1.24.0
+flask>=3.0.0
+rumps>=0.4.0
+psutil>=5.9.0
+pyobjc-core>=10.0
+pyobjc-framework-Cocoa>=10.0
+pyobjc-framework-WebKit>=10.0
+pillow>=10.0.0
