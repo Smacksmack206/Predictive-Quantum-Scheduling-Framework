@@ -1,0 +1,29 @@
+{
+  "quantum": {
+    "engine": "qiskit",
+    "max_qubits": 48,
+    "optimization_interval": 10,
+    "use_quantum_max": true,
+    "fallback_to_classical": true
+  },
+  "idle": {
+    "suspend_delay": 30,
+    "sleep_delay": 120,
+    "cpu_idle_threshold": 5.0,
+    "enable_ml_prediction": true,
+    "aggressive_mode": true
+  },
+  "battery": {
+    "critical_threshold": 20,
+    "low_threshold": 40,
+    "aggressive_mode": true,
+    "enable_guardian": true,
+    "auto_protection": true
+  },
+  "ui": {
+    "theme": "dark",
+    "enable_modern_ui": true,
+    "refresh_interval": 5,
+    "show_notifications": true
+  }
+}
