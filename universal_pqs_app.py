@@ -23,40 +23,21 @@ import threading
 import logging
 from typing import Dict, Any, Optional
 
-# Check for root privileges and re-execute with sudo if needed
-def ensure_root_privileges():
-    """Ensure the app runs with root privileges for full system control"""
+# Check for root privileges - inform user but don't block
+def check_root_privileges():
+    """Check if running with root privileges and inform user"""
     if os.geteuid() != 0:
-        print("🔐 PQS requires elevated privileges for full system control")
-        print("🔄 Requesting administrator access...")
-        
-        # Get the Python interpreter path
-        python_path = sys.executable
-        
-        # Get the script path
-        script_path = os.path.abspath(__file__)
-        
-        # Re-execute with sudo
-        try:
-            # Use osascript to prompt for password with GUI
-            cmd = [
-                'osascript',
-                '-e',
-                f'do shell script "{python_path} {script_path}" with administrator privileges'
-            ]
-            subprocess.run(cmd, check=True)
-            sys.exit(0)  # Exit the non-privileged instance
-        except subprocess.CalledProcessError:
-            print("❌ Administrator access denied")
-            print("⚠️  PQS will run with limited capabilities")
-            print("💡 For full quantum control, run: sudo python3.11 universal_pqs_app.py")
-            # Continue without privileges
-        except Exception as e:
-            print(f"⚠️  Could not elevate privileges: {e}")
-            # Continue without privileges
+        print("⚠️  PQS running without elevated privileges")
+        print("💡 For full system control, run: sudo python3.11 universal_pqs_app.py")
+        print("📊 Current mode: Monitoring and optimization (limited process control)")
+        return False
+    else:
+        print("✅ PQS running with elevated privileges")
+        print("🎯 Full system control enabled")
+        return True
 
-# Ensure root privileges at startup
-ensure_root_privileges()
+# Check privileges at startup (non-blocking)
+HAS_ROOT_PRIVILEGES = check_root_privileges()
 
 # Setup logging - suppress verbose INFO logs during startup
 logging.basicConfig(
