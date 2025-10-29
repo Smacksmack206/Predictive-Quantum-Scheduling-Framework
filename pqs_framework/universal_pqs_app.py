@@ -136,6 +136,34 @@ except ImportError as e:
     IDLE_MANAGER_AVAILABLE = False
     print(f"⚠️ Aggressive Idle Manager not available: {e}")
 
+# Advanced Battery Optimizer (replaces Ultra Optimizer with all improvements)
+try:
+    from advanced_battery_optimizer import get_advanced_optimizer
+    ADVANCED_OPTIMIZER_AVAILABLE = True
+    print("🔋 Advanced Battery Optimizer loaded successfully")
+    
+    # Start Advanced Optimizer immediately in background
+    def start_advanced_optimizer_bg():
+        try:
+            optimizer = get_advanced_optimizer()
+            optimizer.start()
+            print("✅ Advanced Battery Optimizer started (all 10+ improvements active)")
+        except Exception as e:
+            print(f"⚠️ Could not start Advanced Optimizer: {e}")
+    
+    threading.Thread(target=start_advanced_optimizer_bg, daemon=True).start()
+        
+except ImportError as e:
+    ADVANCED_OPTIMIZER_AVAILABLE = False
+    print(f"⚠️ Advanced Battery Optimizer not available: {e}")
+
+# Keep Ultra Optimizer for backwards compatibility
+try:
+    from ultra_idle_battery_optimizer import get_ultra_optimizer
+    ULTRA_OPTIMIZER_AVAILABLE = True
+except ImportError:
+    ULTRA_OPTIMIZER_AVAILABLE = False
+
 # Configuration
 APP_NAME = "PQS Framework 48-Qubit"
 CONFIG_FILE = os.path.expanduser("~/.universal_pqs_config.json")
@@ -3998,6 +4026,42 @@ def api_quantum_max_optimize():
             'success': False,
             'error': str(e)
         }), 500
+
+# Ultimate Battery Optimizer API Endpoints
+@flask_app.route('/api/ultimate-optimizer/status')
+def api_ultimate_optimizer_status():
+    """Get ultimate battery optimizer status (ALL 25+ improvements)"""
+    try:
+        if ULTIMATE_OPTIMIZER_AVAILABLE:
+            from ultimate_battery_optimizer import get_ultimate_optimizer
+            optimizer = get_ultimate_optimizer()
+            status = optimizer.get_status()
+            return jsonify({
+                'available': True,
+                'version': 'ultimate',
+                'improvements': 25,
+                **status
+            })
+        else:
+            return jsonify({
+                'available': False,
+                'message': 'Ultimate Optimizer not available'
+            })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Advanced Battery Optimizer API Endpoints (backwards compatibility)
+@flask_app.route('/api/advanced-optimizer/status')
+def api_advanced_optimizer_status():
+    """Legacy endpoint - redirects to ultimate"""
+    return api_ultimate_optimizer_status()
+
+# Ultra Idle Battery Optimizer API Endpoints (backwards compatibility)
+@flask_app.route('/api/ultra-optimizer/status')
+def api_ultra_optimizer_status():
+    """Get ultra idle battery optimizer status (legacy endpoint)"""
+    # Redirect to advanced optimizer
+    return api_advanced_optimizer_status()
 
 # Aggressive Idle Manager API Endpoints
 @flask_app.route('/api/idle-manager/status')

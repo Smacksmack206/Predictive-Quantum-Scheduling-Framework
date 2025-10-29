@@ -15,6 +15,15 @@ def main():
     
     print("🚀 Starting PQS Framework...")
     
+    # Start Ultra Idle Battery Optimizer
+    try:
+        from ultra_idle_battery_optimizer import get_ultra_optimizer
+        ultra_optimizer = get_ultra_optimizer()
+        ultra_optimizer.start()
+        print("🔋 Ultra Idle Battery Optimizer started")
+    except Exception as e:
+        print(f"⚠️ Ultra optimizer not available: {e}")
+    
     # Start Flask in background
     flask_thread = threading.Thread(target=start_flask_server, daemon=True)
     flask_thread.start()

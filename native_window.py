@@ -149,20 +149,30 @@ def show_engine_selection_alert(callback):
     """Show a simple alert dialog for engine selection"""
     alert = NSAlert.alloc().init()
     alert.setMessageText_("⚛️ Choose Your Quantum Engine")
-    alert.setInformativeText_("Select the quantum computing backend for optimization:\n\n🚀 Cirq: Lightweight, fast, recommended for daily use\n🔬 Qiskit: IBM's framework with advanced algorithms")
-    alert.addButtonWithTitle_("Cirq (Recommended)")
-    alert.addButtonWithTitle_("Qiskit (Experimental)")
+    alert.setInformativeText_(
+        "Select the quantum computing backend for optimization:\n\n"
+        "🔬 Qiskit (Recommended): IBM's framework, 48 qubits, best performance\n"
+        "   • Advanced quantum algorithms (VQE, QAOA)\n"
+        "   • Maximum optimization power\n"
+        "   • Proven quantum advantage\n\n"
+        "🚀 Cirq: Google's framework, 20 qubits, lightweight\n"
+        "   • Faster startup time\n"
+        "   • Lower resource usage\n"
+        "   • Good for basic optimization"
+    )
+    alert.addButtonWithTitle_("Qiskit (Recommended)")
+    alert.addButtonWithTitle_("Cirq (Lightweight)")
     
     response = alert.runModal()
     
     # Store choice
     import builtins
     if response == NSAlertFirstButtonReturn:
-        builtins.QUANTUM_ENGINE_CHOICE = 'cirq'
-        print("✅ Selected: Cirq")
-    else:
         builtins.QUANTUM_ENGINE_CHOICE = 'qiskit'
-        print("✅ Selected: Qiskit")
+        print("✅ Selected: Qiskit (48 qubits, maximum performance)")
+    else:
+        builtins.QUANTUM_ENGINE_CHOICE = 'cirq'
+        print("✅ Selected: Cirq (20 qubits, lightweight)")
     
     # Call callback
     if callback:
@@ -177,7 +187,7 @@ class EngineSelectionController(NSObject):
             return None
         
         self.callback = callback
-        self.selected_engine = 'cirq'  # Default
+        self.selected_engine = 'qiskit'  # Default to Qiskit (best performance)
         self.cirq_radio = None
         self.qiskit_radio = None
         

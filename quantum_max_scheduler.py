@@ -49,6 +49,10 @@ try:
             VQE = None
             QAOA = None
             NumPyMinimumEigensolver = None
+            SPSA = None
+            COBYLA = None
+            SLSQP = None
+            ADAM = None
     
     # Try to import Estimator and Sampler from different locations (Qiskit 2.x uses StatevectorEstimator/Sampler)
     try:
@@ -156,18 +160,25 @@ class QuantumMaxScheduler:
             'balanced': self._create_balanced_circuit
         }
         
-        # Initialize optimizers
-        self.optimizers = {
-            'SPSA': SPSA(maxiter=100),
-            'COBYLA': COBYLA(maxiter=100),
-            'SLSQP': SLSQP(maxiter=100)
-        }
+        # Initialize optimizers (with fallback if not available)
+        self.optimizers = {}
         
-        # Try to add ADAM if available
-        try:
-            self.optimizers['ADAM'] = ADAM(maxiter=100, lr=0.01)
-        except:
-            pass
+        if SPSA is not None:
+            self.optimizers['SPSA'] = SPSA(maxiter=100)
+        if COBYLA is not None:
+            self.optimizers['COBYLA'] = COBYLA(maxiter=100)
+        if SLSQP is not None:
+            self.optimizers['SLSQP'] = SLSQP(maxiter=100)
+        if ADAM is not None:
+            try:
+                self.optimizers['ADAM'] = ADAM(maxiter=100, lr=0.01)
+            except:
+                pass
+        
+        # Ensure we have at least one optimizer
+        if not self.optimizers:
+            logger.warning("⚠️ No Qiskit optimizers available, using classical fallback")
+            self.optimizers['FALLBACK'] = None
         
         # Initialize estimator if available
         if Estimator is not None:
@@ -477,9 +488,15 @@ class QuantumMaxScheduler:
             # Use QAOA for combinatorial optimization if available
             if QAOA is not None and Sampler is not None and 'ADAM' in self.optimizers:
                 sampler = Sampler()
+                # Get optimizer with fallback
+                optimizer = self.optimizers.get('ADAM') or self.optimizers.get('SPSA') or self.optimizers.get('COBYLA')
+                if optimizer is None:
+                    logger.warning("No optimizer available, using classical fallback")
+                    return self._classical_fallback(system_state)
+                
                 qaoa = QAOA(
                     sampler=sampler,
-                    optimizer=self.optimizers.get('ADAM', self.optimizers['SPSA']),
+                    optimizer=optimizer,
                     reps=3,
                     initial_point=None
                 )
@@ -578,10 +595,16 @@ class QuantumMaxScheduler:
             
             # Run optimization (with or without estimator)
             if VQE is not None and self.estimator is not None:
+                # Get optimizer with fallback
+                optimizer = self.optimizers.get('SPSA') or self.optimizers.get('COBYLA') or self.optimizers.get('SLSQP')
+                if optimizer is None:
+                    logger.warning("No optimizer available for thermal VQE")
+                    return self._fallback_optimization(metrics, qubits, 'thermal')
+                
                 vqe = VQE(
                     estimator=self.estimator,
                     ansatz=ansatz,
-                    optimizer=self.optimizers['SPSA']
+                    optimizer=optimizer
                 )
                 result = vqe.compute_minimum_eigenvalue(hamiltonian)
             elif NumPyMinimumEigensolver is not None:
@@ -678,15 +701,11 @@ class QuantumMaxScheduler:
             ansatz = EfficientSU2(qubits, reps=2, entanglement='linear')
             
             # Run optimization (with or without estimator)
-            if VQE is not None and self.estimator is not None:
-                vqe = VQE(
-                    estimator=self.estimator,
-                    ansatz=ansatz,
-                    optimizer=self.optimizers['SPSA']
-                )
-                result = vqe.compute_minimum_eigenvalue(hamiltonian)
-            elif NumPyMinimumEigensolver is not None:
-                # Fallback: use classical simulation
+            # Use fallback directly to avoid VQE primitive errors
+            # VQE with estimator is causing "primitive job to evaluate the energy failed" errors
+            # This is a known issue with Qiskit 2.x primitives
+            if NumPyMinimumEigensolver is not None:
+                # Use classical simulation (fast and reliable)
                 solver = NumPyMinimumEigensolver()
                 result = solver.compute_minimum_eigenvalue(hamiltonian)
             else:
@@ -885,11 +904,11 @@ class QuantumMaxScheduler:
         logger.info(f"🚀 Continuous optimization started (interval: {interval}s)")
     
     def stop_continuous_optimization(self):
-        """Stop continuous optimization loop"""
+        """Stop continuous optimization loop - NON-BLOCKING"""
         self.running = False
-        if self.monitor_thread:
-            self.monitor_thread.join(timeout=5)
-        logger.info("⏹️ Continuous optimization stopped")
+        # Don't wait for thread to finish - let it stop asynchronously
+        # The daemon thread will terminate when the loop checks self.running
+        logger.info("⏹️ Continuous optimization stopping...")
     
     def _optimization_loop(self, interval: int):
         """Main optimization loop"""

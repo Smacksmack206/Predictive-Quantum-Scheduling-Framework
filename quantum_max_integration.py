@@ -29,18 +29,18 @@ class QuantumMaxIntegration:
             logger.warning(f"⚠️ Quantum Max Scheduler not available: {e}")
     
     def activate_quantum_max_mode(self, interval: int = 10) -> bool:
-        """Activate quantum maximum mode"""
+        """Activate quantum maximum mode - NON-BLOCKING"""
         if not self.quantum_scheduler:
             logger.error("Quantum Max Scheduler not available")
             return False
         
         try:
-            # Stop if already running
+            # Stop if already running (non-blocking)
             if self.quantum_scheduler.running:
                 self.quantum_scheduler.stop_continuous_optimization()
-                time.sleep(0.5)
+                # Don't wait - let it stop asynchronously
             
-            # Start with specified interval
+            # Start with specified interval (non-blocking)
             self.quantum_scheduler.start_continuous_optimization(interval=interval)
             self.is_active = True
             

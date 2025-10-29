@@ -35,6 +35,8 @@ class ActivityState:
     battery_percent: float
     active_workload: bool
     timestamp: float
+    cpu_percent: float = 0.0
+    memory_percent: float = 0.0
 
 
 class AggressiveIdleManager:
