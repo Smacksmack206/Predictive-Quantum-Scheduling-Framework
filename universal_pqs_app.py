@@ -23,6 +23,41 @@ import threading
 import logging
 from typing import Dict, Any, Optional
 
+# Check for root privileges and re-execute with sudo if needed
+def ensure_root_privileges():
+    """Ensure the app runs with root privileges for full system control"""
+    if os.geteuid() != 0:
+        print("🔐 PQS requires elevated privileges for full system control")
+        print("🔄 Requesting administrator access...")
+        
+        # Get the Python interpreter path
+        python_path = sys.executable
+        
+        # Get the script path
+        script_path = os.path.abspath(__file__)
+        
+        # Re-execute with sudo
+        try:
+            # Use osascript to prompt for password with GUI
+            cmd = [
+                'osascript',
+                '-e',
+                f'do shell script "{python_path} {script_path}" with administrator privileges'
+            ]
+            subprocess.run(cmd, check=True)
+            sys.exit(0)  # Exit the non-privileged instance
+        except subprocess.CalledProcessError:
+            print("❌ Administrator access denied")
+            print("⚠️  PQS will run with limited capabilities")
+            print("💡 For full quantum control, run: sudo python3.11 universal_pqs_app.py")
+            # Continue without privileges
+        except Exception as e:
+            print(f"⚠️  Could not elevate privileges: {e}")
+            # Continue without privileges
+
+# Ensure root privileges at startup
+ensure_root_privileges()
+
 # Setup logging - suppress verbose INFO logs during startup
 logging.basicConfig(
     level=logging.WARNING,  # Only show warnings and errors
