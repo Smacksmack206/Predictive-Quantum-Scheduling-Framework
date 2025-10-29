@@ -426,13 +426,13 @@ class RealQuantumMLSystem:
             ], dtype=torch.float32)
             
             # Target is the energy savings achieved
-            target = torch.tensor([result.energy_saved / 100.0], dtype=torch.float32)
+            target = torch.tensor([[result.energy_saved / 100.0]], dtype=torch.float32)
             
             # Forward pass
             self.ml_model.train()
             prediction = self.ml_model(features)
             
-            # Calculate loss
+            # Calculate loss (ensure shapes match)
             loss = self.ml_loss_fn(prediction, target)
             
             # Backward pass and optimize
