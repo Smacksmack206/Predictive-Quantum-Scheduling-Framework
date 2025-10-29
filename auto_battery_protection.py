@@ -211,7 +211,9 @@ class AutoBatteryProtectionService:
                 time.sleep(self.check_interval)
                 
             except Exception as e:
+                import traceback
                 logger.error(f"Protection loop error: {e}")
+                logger.error(f"Traceback: {traceback.format_exc()}")
                 time.sleep(self.check_interval)
     
     def _discover_high_impact_apps(self):
